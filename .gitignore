@@ -1,23 +1,50 @@
-# Windows thumbnail cache files
-Thumbs.db
-ehthumbs.db
-ehthumbs_vista.db
 
-# Folder config file
-Desktop.ini
+obj/
 
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
+eduke32
+mapster32
+voidsw
+voidsw-editor
+kenbuild
+kenbuild-editor
+apps/
+*.exe
+/*.dll
+*.dylib
+*.so
+*.elf
+*.dol
+*.x86
+*.x64
+*.ppc
+*.app
 
-# Windows Installer files
-*.cab
-*.msi
-*.msm
-*.msp
+*.log
+*.cache
+*.cfg
+textures
 
-# Windows shortcuts
-*.lnk
+*.manifest
+/*.map
+/platform/Windows/*.map
+*.pdb
+.vs/
+*.VC.db
+*.VC.opendb
+*.sym
+/*.con
+/platform/Windows/*.con
+*.memmap
+*.sdf
+*.suo
+*.opensdf
+*.vcxproj.user
+*.psess
+*.vsp
+perl.exe.stackdump
 
-# =========================
-# Operating System Files
-# =========================
+xcuserdata/
+project.xcworkspace/
+*.dSYM/
+
+.DS_Store
