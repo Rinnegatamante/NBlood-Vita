@@ -50,7 +50,7 @@ int32_t JOYSTICK_GetButtons(void)
     {
         int32_t hat = JOYSTICK_GetHat(0);
         if (hat != 0)
-            buttons |= hat << min(MAXJOYBUTTONS, joystick.numButtons);
+            buttons |= hat << min((int32_t)MAXJOYBUTTONS, joystick.numButtons);
     }
 
     return buttons;

@@ -44,7 +44,7 @@ static playbackstatus MV_GetNextWAVBlock(VoiceNode *voice)
 
     voice->sound        = voice->NextBlock;
     voice->position    -= voice->length;
-    voice->length       = min(voice->BlockLength, 0x8000u);
+    voice->length       = min((unsigned int)voice->BlockLength, 0x8000u);
     voice->NextBlock   += voice->length * (voice->channels * voice->bits / 8);
     voice->BlockLength -= voice->length;
     voice->length     <<= 16;
@@ -65,7 +65,7 @@ static playbackstatus MV_GetNextVOCBlock(VoiceNode *voice)
     {
         voice->position    -= voice->length;
         voice->sound       += (voice->length >> 16) * (voice->channels * voice->bits / 8);
-        voice->length       = min(voice->BlockLength, 0x8000u);
+        voice->length       = min((unsigned int)voice->BlockLength, 0x8000u);
         voice->BlockLength -= voice->length;
         voice->length     <<= 16;
         return KeepPlaying;
@@ -315,7 +315,7 @@ static playbackstatus MV_GetNextRAWBlock(VoiceNode *voice)
 
     voice->sound        = voice->NextBlock;
     voice->position    -= voice->length;
-    voice->length       = min(voice->BlockLength, 0x8000u);
+    voice->length       = min((unsigned int)voice->BlockLength, 0x8000u);
     voice->NextBlock   += voice->length * (voice->channels * voice->bits / 8);
     voice->BlockLength -= voice->length;
     voice->length     <<= 16;
@@ -340,7 +340,7 @@ int32_t MV_PlayWAV3D(char *ptr, uint32_t length, int32_t loophow, int32_t pitcho
     // Ensure angle is within 0 - 127
     angle &= MV_MAXPANPOSITION;
 
-    return MV_PlayWAV(ptr, length, loophow, -1, pitchoffset, max(0, 255 - distance),
+    return MV_PlayWAV(ptr, length, loophow, -1, pitchoffset, max((int32_t)0, 255 - distance),
         MV_PanTable[ angle ][ vol ].left, MV_PanTable[ angle ][ vol ].right, priority, volume, callbackval);
 }
 
@@ -451,7 +451,7 @@ int32_t MV_PlayVOC3D(char *ptr, uint32_t length, int32_t loophow, int32_t pitcho
     // Ensure angle is within 0 - 127
     angle &= MV_MAXPANPOSITION;
 
-    return MV_PlayVOC(ptr, length, loophow, -1, pitchoffset, max(0, 255 - distance),
+    return MV_PlayVOC(ptr, length, loophow, -1, pitchoffset, max((int32_t)0, 255 - distance),
         MV_PanTable[ angle ][ vol ].left, MV_PanTable[ angle ][ vol ].right, priority, volume, callbackval);
 }
 

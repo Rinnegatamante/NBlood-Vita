@@ -41,6 +41,16 @@ extern int g_useCwd;
 #define BYTEVERSION 101
 #define EXEVERSION 100
 
+#ifdef __PSP2__
+#ifdef __cplusplus
+extern "C" {
+#endif
+	extern int32_t handleevents(void);
+#ifdef __cplusplus
+}  // end extern "C"
+#endif
+#endif
+
 void _SetErrorLoc(const char *pzFile, int nLine);
 void _ThrowError(const char *pzFormat, ...);
 void __dassert(const char *pzExpr, const char *pzFile, int nLine);

@@ -385,6 +385,39 @@ static inline void polymer_invalidateartmap(int32_t tilenum)
     }
 }
 
+#ifdef __PSP2__
+// pthtyp pth->flags bits
+enum {
+    PTH_CLAMPED = 1,
+    PTH_HIGHTILE = 2,
+    PTH_SKYBOX = 4,
+    PTH_HASALPHA = 8,
+    PTH_HASFULLBRIGHT = 16,
+    PTH_NPOTWALL = 32,  // r_npotwallmode=1 generated texture
+    PTH_FORCEFILTER = 64,
+
+    PTH_INVALIDATED = 128,
+};
+
+typedef struct pthtyp_t
+{
+    struct pthtyp_t *next;
+    struct pthtyp_t *ofb; // fullbright pixels
+    hicreplctyp     *hicr;
+
+    uint32_t        glpic;
+    vec2f_t         scale;
+    vec2_t          siz;
+    int16_t         picnum;
+
+    char            palnum;
+    char            shade;
+    char            effects;
+    char            flags;      // 1 = clamped (dameth&4), 2 = hightile, 4 = skybox face, 8 = hasalpha, 16 = hasfullbright, 128 = invalidated
+    char            skyface;
+} pthtyp;
+#endif
+
 // Compare with eligible_for_tileshades()
 static inline int32_t polymer_eligible_for_artmap(int32_t tilenum, const pthtyp *pth)
 {

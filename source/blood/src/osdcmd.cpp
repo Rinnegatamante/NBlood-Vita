@@ -1126,7 +1126,7 @@ int32_t registerosdcommands(void)
     return 0;
 }
 
-void GAME_onshowosd(int shown)
+void GAME_onshowosd(int32_t shown)
 {
     // G_UpdateScreenArea();
 
@@ -1139,7 +1139,7 @@ void GAME_onshowosd(int shown)
 //        KB_KeyDown[sc_Pause] = 1;
 }
 
-void GAME_clearbackground(int numcols, int numrows)
+void GAME_clearbackground(int32_t numcols, int32_t numrows)
 {
     COMMON_clearbackground(numcols, numrows);
 }

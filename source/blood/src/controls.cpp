@@ -198,14 +198,14 @@ void ctrlGetInput(void)
     if (MouseDeadZone)
     {
         if (info.dpitch > 0)
-            info.dpitch = max(info.dpitch - MouseDeadZone, 0);
+            info.dpitch = max(info.dpitch - MouseDeadZone, (int32_t)0);
         else if (info.dpitch < 0)
-            info.dpitch = min(info.dpitch + MouseDeadZone, 0);
+            info.dpitch = min(info.dpitch + MouseDeadZone, (int32_t)0);
 
         if (info.dyaw > 0)
-            info.dyaw = max(info.dyaw - MouseDeadZone, 0);
+            info.dyaw = max(info.dyaw - MouseDeadZone, (int32_t)0);
         else if (info.dyaw < 0)
-            info.dyaw = min(info.dyaw + MouseDeadZone, 0);
+            info.dyaw = min(info.dyaw + MouseDeadZone, (int32_t)0);
     }
 
     if (MouseBias)

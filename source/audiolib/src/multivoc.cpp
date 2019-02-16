@@ -788,7 +788,7 @@ int32_t MV_Pan3D(int32_t handle, int32_t angle, int32_t distance)
 
     angle &= MV_MAXPANPOSITION;
 
-    return MV_SetPan(handle, max(0, 255 - distance),
+    return MV_SetPan(handle, max((int32_t)0, 255 - distance),
         MV_PanTable[ angle ][ volume ].left,
         MV_PanTable[ angle ][ volume ].right);
 }
@@ -805,7 +805,7 @@ int32_t MV_GetReverbDelay(void) { return MV_ReverbDelay / MV_SampleSize; }
 
 void MV_SetReverbDelay(int32_t delay)
 {
-    MV_ReverbDelay = max(MV_MIXBUFFERSIZE, min(delay, MV_GetMaxReverbDelay())) * MV_SampleSize;
+    MV_ReverbDelay = max((long int)MV_MIXBUFFERSIZE, min((long int)delay, MV_GetMaxReverbDelay())) * MV_SampleSize;
 }
 
 static int32_t MV_SetMixMode(int32_t numchannels)
@@ -904,7 +904,7 @@ static void MV_CalcPanTable(void)
 
 void MV_SetVolume(int32_t volume)
 {
-    MV_TotalVolume  = min(max(0, volume), MV_MAXTOTALVOLUME);
+    MV_TotalVolume  = min(max((int32_t)0, volume), (long int)MV_MAXTOTALVOLUME);
     MV_GlobalVolume = (float)volume / 255.f;
     // MV_CalcVolume(MV_TotalVolume);
 }

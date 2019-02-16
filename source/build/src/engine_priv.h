@@ -287,7 +287,7 @@ static FORCE_INLINE int32_t getpalookup(int32_t davis, int32_t dashade)
 {
     if (getpalookup_replace)
         return getpalookup_replace(davis, dashade);
-    return min(max(dashade + (davis >> 8), 0), numshades - 1);
+    return min((int)max(dashade + (davis >> 8), (long int)0), numshades - 1);
 }
 
 static FORCE_INLINE int32_t getpalookupsh(int32_t davis) { return getpalookup(davis, globalshade) << 8; }

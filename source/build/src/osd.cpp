@@ -325,7 +325,7 @@ static int osdfunc_fileinfo(osdcmdptr_t parm)
     return OSDCMD_OK;
 }
 
-static void _internal_drawosdchar(int x, int y, char ch, int shade, int pal)
+static void _internal_drawosdchar(int32_t x, int32_t y, char ch, int32_t shade, int32_t pal)
 {
     UNREFERENCED_PARAMETER(shade);
     UNREFERENCED_PARAMETER(pal);
@@ -335,7 +335,7 @@ static void _internal_drawosdchar(int x, int y, char ch, int shade, int pal)
     printext256(4+(x<<3),4+(y<<3), whiteColorIdx, -1, st, 0);
 }
 
-static void _internal_drawosdstr(int x, int y, const char *ch, int len, int shade, int pal)
+static void _internal_drawosdstr(int32_t x, int32_t y, const char *ch, int32_t len, int32_t shade, int32_t pal)
 {
     char st[1024];
 
@@ -353,7 +353,7 @@ static void _internal_drawosdstr(int x, int y, const char *ch, int len, int shad
     }
 }
 
-static void _internal_drawosdcursor(int x, int y, int flags, int lastkeypress)
+static void _internal_drawosdcursor(int32_t x, int32_t y, int32_t flags, int32_t lastkeypress)
 {
     char st[2] = { '_',0 };
 
@@ -370,9 +370,9 @@ static void _internal_drawosdcursor(int x, int y, int flags, int lastkeypress)
     // Find the palette index closest to Duke3D's brightest blue
     // "foreground" color.  (Index 79, or the last column of the 5th row,
     // if the palette is laid out in a 16x16 pattern.)
-    for (int i=0, k=UINT8_MAX+1; i<256; i++)
+    for (int32_t i=0, k=UINT8_MAX+1; i<256; i++)
     {
-        int const j =
+        int32_t const j =
             klabs(curpalette[i].r - 4*47) +
             klabs(curpalette[i].g - 4*55) +
             klabs(curpalette[i].b - 4*63);
@@ -380,17 +380,17 @@ static void _internal_drawosdcursor(int x, int y, int flags, int lastkeypress)
     }
 }
 
-static int _internal_getcolumnwidth(int w)
+static int32_t _internal_getcolumnwidth(int32_t w)
 {
     return w/8 - 1;
 }
 
-static int _internal_getrowheight(int w)
+static int32_t _internal_getrowheight(int32_t w)
 {
     return w/8;
 }
 
-static void _internal_clearbackground(int cols, int rows)
+static void _internal_clearbackground(int32_t cols, int32_t rows)
 {
     UNREFERENCED_PARAMETER(cols);
     UNREFERENCED_PARAMETER(rows);
@@ -401,7 +401,7 @@ static int32_t _internal_gettime(void)
     return 0;
 }
 
-static void _internal_onshowosd(int a)
+static void _internal_onshowosd(int32_t a)
 {
     UNREFERENCED_PARAMETER(a);
 }
@@ -779,14 +779,14 @@ void OSD_SetLogFile(const char *fn)
 //
 // OSD_SetFunctions() -- Sets some callbacks which the OSD uses to understand its world
 //
-void OSD_SetFunctions(void (*drawchar)(int, int, char, int, int),
-                      void (*drawstr)(int, int, const char *, int, int, int),
-                      void (*drawcursor)(int, int, int, int),
-                      int (*colwidth)(int),
-                      int (*rowheight)(int),
-                      void (*clearbg)(int, int),
+void OSD_SetFunctions(void (*drawchar)(int32_t, int32_t, char, int32_t, int32_t),
+                      void (*drawstr)(int32_t, int32_t, const char *, int32_t, int32_t, int32_t),
+                      void (*drawcursor)(int32_t, int32_t, int32_t, int32_t),
+                      int32_t (*colwidth)(int32_t),
+                      int32_t (*rowheight)(int32_t),
+                      void (*clearbg)(int32_t, int32_t),
                       int32_t (*gtime)(void),
-                      void (*showosd)(int))
+                      void (*showosd)(int32_t))
 {
     drawosdchar     = drawchar   ? drawchar   : _internal_drawosdchar;
     drawosdstr      = drawstr    ? drawstr    : _internal_drawosdstr;
@@ -1416,8 +1416,8 @@ void OSD_ResizeDisplay(int w, int h)
 
     Bmemset(newtext, asc_Space, OSDBUFFERSIZE);
 
-    int const copylines = min(newmaxlines, t.maxlines);
-    int const copycols  = min(newcols, d.cols);
+    int const copylines = min((int32_t)newmaxlines, t.maxlines);
+    int const copycols  = min((int32_t)newcols, d.cols);
 
     for (int i = 0; i < copylines; ++i)
     {
@@ -1518,7 +1518,7 @@ void OSD_Draw(void)
 
     int topoffs = osd->draw.head * osd->draw.cols;
     int row     = osdrowscur - 1;
-    int lines   = min(osd->text.lines - osd->draw.head, osdrowscur);
+    int lines   = min(osd->text.lines - osd->draw.head, (long int)osdrowscur);
 
     videoBeginDrawing();
 
@@ -1553,7 +1553,7 @@ void OSD_Draw(void)
 
     drawosdchar(2 + offset, osdrowscur, '>', shade, osd->draw.promptpal);
 
-    int const len = min(osd->draw.cols-1-3 - offset, osd->editor.len - osd->editor.start);
+    int const len = min(osd->draw.cols-1-3 - offset, (long int)osd->editor.len - osd->editor.start);
 
     for (int x=len-1; x>=0; x--)
         drawosdchar(3 + x + offset, osdrowscur, osd->editor.buf[osd->editor.start+x], osd->draw.editshade<<1, osd->draw.editpal);

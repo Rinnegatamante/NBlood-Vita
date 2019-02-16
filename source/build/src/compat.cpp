@@ -29,6 +29,22 @@
 
 #include "baselayer.h"
 
+#ifdef __PSP2__
+void LOG(const char *format, ...) {
+	__gnuc_va_list arg;
+	va_start(arg, format);
+	char msg[512];
+	vsprintf(msg, format, arg);
+	va_end(arg);
+	sprintf(msg, "%s\n", msg);
+	FILE* log = fopen("ux0:/data/eDuke32.log", "a+");
+	if (log != NULL) {
+		fwrite(msg, 1, 512, log);
+		fclose(log);
+	}
+}
+#endif
+
 ////////// PANICKING ALLOCATION FUNCTIONS //////////
 
 static void (*g_MemErrHandler)(int32_t line, const char *file, const char *func);
@@ -574,7 +590,7 @@ typedef BOOL (WINAPI *aGlobalMemoryStatusExType)(LPMEMORYSTATUSEX);
 
 uint32_t Bgetsysmemsize(void)
 {
-#ifdef _WIN32
+#ifdef _WIN32 
     uint32_t siz = UINT32_MAX;
     HMODULE lib = LoadLibrary("KERNEL32.DLL");
 
@@ -603,7 +619,7 @@ uint32_t Bgetsysmemsize(void)
     else initprintf("Bgetsysmemsize(): unable to load KERNEL32.DLL!\n");
 
     return siz;
-#elif (defined(_SC_PAGE_SIZE) || defined(_SC_PAGESIZE)) && defined(_SC_PHYS_PAGES) && !defined(GEKKO)
+#elif (defined(_SC_PAGE_SIZE) || defined(_SC_PAGESIZE)) && defined(_SC_PHYS_PAGES) && !defined(GEKKO) && !defined(__PSP2__)
     uint32_t siz = UINT32_MAX;
 #ifdef _SC_PAGE_SIZE
     int64_t const scpagesiz = sysconf(_SC_PAGE_SIZE);

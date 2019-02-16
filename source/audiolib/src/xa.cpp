@@ -20,11 +20,11 @@
 /* ADPCM */
 #define XA_DATA_START   (0x44-48)
 
-#define FXD_FxdToPCM(dt)        (max(min((int16_t)((dt)>>16), 32767), -32768))
-#define DblToPCM(dt)            (int16_t)(max(min((dt), 32767), -32768))
+#define FXD_FxdToPCM(dt)        (max(min((int16_t)((dt)>>16), (int32_t)32767), (int32_t)-32768))
+#define DblToPCM(dt)            (int16_t)(max(min((dt), (int32_t)32767), (int32_t)-32768))
 
 #if USE_FXD
-#define FXD_FxdToPcm16(dt)      (max(min((dt)/2, 32767), -32768))
+#define FXD_FxdToPcm16(dt)      (max(min((dt)/2, (int32_t)32767), (int32_t)-32768))
 #define FXD_Pcm16ToFxd(dt)      ((int32_t)dt*2)
 #endif
 
@@ -393,7 +393,7 @@ int32_t MV_PlayXA3D(char *ptr, uint32_t length, int32_t loophow, int32_t pitchof
 
     left  = MV_PanTable[angle][vol].left;
     right = MV_PanTable[angle][vol].right;
-    mid   = max(0, 255 - distance);
+    mid   = max((int32_t)0, 255 - distance);
 
     status = MV_PlayXA(ptr, length, loophow, -1, pitchoffset, mid, left, right, priority, volume, callbackval);
 

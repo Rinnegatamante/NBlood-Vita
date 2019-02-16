@@ -362,7 +362,7 @@ static char *getsymbtabspace(int32_t reqd)
 
     if (symbtablength + reqd > symbtaballoclength)
     {
-        for (i=max(symbtaballoclength,SYMBTABSTARTSIZE); symbtablength+reqd>i; i<<=1) { }
+        for (i=max((int)symbtaballoclength,SYMBTABSTARTSIZE); symbtablength+reqd>i; i<<=1) { }
         np = (char *)Xrealloc(symbtab, i);
         symbtab = np; symbtaballoclength = i;
     }

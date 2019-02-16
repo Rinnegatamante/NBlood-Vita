@@ -4415,8 +4415,8 @@ static void classicDrawVoxel(int32_t dasprx, int32_t daspry, int32_t dasprz, int
     y = mulscale16(globalposy-daspry, daxscalerecip);
     const int32_t backx = (dmulscale10(x,sprcosang, y,sprsinang)+daxpivot)>>8;
     const int32_t backy = (dmulscale10(y,sprcosang, x,-sprsinang)+daypivot)>>8;
-    const int32_t cbackx = min(max(backx,0),daxsiz-1);
-    const int32_t cbacky = min(max(backy,0),daysiz-1);
+    const int32_t cbackx = min(max(backx,(long int)0),daxsiz-1);
+    const int32_t cbacky = min(max(backy,(long int)0),daysiz-1);
 
     sprcosang = mulscale14(daxscale, sprcosang);
     sprsinang = mulscale14(daxscale, sprsinang);
@@ -6711,7 +6711,7 @@ static void dorotatesprite(int32_t sx, int32_t sy, int32_t z, int16_t a, int16_t
                 char bad;
                 int32_t xx, xend;
 
-                bad = 15; xend = min(x2-x,4);
+                bad = 15; xend = min(x2-x,(long int)4);
                 for (xx=0; xx<xend; xx++)
                 {
                     bx += xv2;
@@ -8966,7 +8966,7 @@ void renderDrawMapView(int32_t dax, int32_t day, int32_t zoome, int16_t ang)
                 globalshade = ((int32_t)sector[spr->sectnum].ceilingshade);
             else
                 globalshade = ((int32_t)sector[spr->sectnum].floorshade);
-            globalshade = max(min(globalshade+spr->shade+6,numshades-1),0);
+            globalshade = max(min(globalshade+spr->shade+6,(long int)numshades-1),(long int)0);
             asm3 = FP_OFF(palookup[spr->pal]+(globalshade<<8));
             globvis = globalhisibility;
             if (sec->visibility != 0) globvis = mulscale4(globvis, (uint8_t)(sec->visibility+16));
@@ -9836,7 +9836,7 @@ static void videoAllocateBuffers(void)
 {
     int32_t i;
     // Needed for the game's TILT_SETVIEWTOTILE_320.
-    const int32_t clamped_ydim = max(ydim, 320);
+    const int32_t clamped_ydim = max((int)ydim, 320);
 
     struct
     {
@@ -9930,8 +9930,8 @@ int32_t videoSetGameMode(char davidoption, int32_t daupscaledxdim, int32_t daups
 
     if (nogl) dabpp = 8;
 #endif
-    daupscaledxdim = max(320, daupscaledxdim);
-    daupscaledydim = max(200, daupscaledydim);
+    daupscaledxdim = max((int32_t)320, daupscaledxdim);
+    daupscaledydim = max((int32_t)200, daupscaledydim);
 
     if (in3dmode() && videomodereset == 0 && (davidoption == fullscreen) &&
         (xres == daupscaledxdim) && (yres == daupscaledydim) && (bpp == dabpp) && (upscalefactor == daupscalefactor))
@@ -9959,7 +9959,7 @@ int32_t videoSetGameMode(char davidoption, int32_t daupscaledxdim, int32_t daups
     else rendmode = REND_CLASSIC;
 #endif
 
-    upscalefactor = max(1, min(tabledivide32(yres, 200), daupscalefactor));
+    upscalefactor = max(1, (int)min(tabledivide32(yres, 200), (long int)daupscalefactor));
     //POGOTODO: Polymost/Polymer could work with upscaling with a couple more changes
     int32_t scalefactor = upscalefactor;
 #ifdef RENDERTYPESDL

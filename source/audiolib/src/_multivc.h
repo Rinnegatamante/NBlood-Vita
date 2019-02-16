@@ -53,7 +53,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 // mirrors FX_MUSIC_PRIORITY from fx_man.h
 #define MV_MUSIC_PRIORITY INT_MAX
 
-#define MIX_VOLUME(volume) ((max(0, min((volume), 255)) * (MV_MAXVOLUME + 1)) >> 8)
+#define MIX_VOLUME(volume) ((max((long int)0, min((volume), (long int)255)) * (MV_MAXVOLUME + 1)) >> 8)
 
 extern float MV_GlobalVolume;
 

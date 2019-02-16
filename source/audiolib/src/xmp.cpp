@@ -89,7 +89,7 @@ int32_t MV_PlayXMP3D(char *ptr, uint32_t length, int32_t loophow, int32_t pitcho
 
     left  = MV_PanTable[angle][vol].left;
     right = MV_PanTable[angle][vol].right;
-    mid   = max( 0, 255 - distance );
+    mid   = max((int32_t)0, 255 - distance );
 
     status = MV_PlayXMP(ptr, length, loophow, -1, pitchoffset, mid, left, right, priority, volume, callbackval);
 

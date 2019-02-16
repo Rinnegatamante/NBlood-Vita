@@ -42,6 +42,24 @@
 static SDL_version linked;
 #endif
 
+#ifdef __PSP2__
+#include <vita2d.h>
+
+int _newlib_heap_size_user = 192 * 1024 * 1024;
+
+#define MAX_CURDIR_PATH 512
+char cur_dir[MAX_CURDIR_PATH] = "ux0:data/NBlood/";
+char *getcwd(char *buf, size_t size) {
+    if (buf != NULL) {
+        strncpy(buf, cur_dir, size);
+    }
+    return cur_dir;
+}
+int chdir(const char *path) {
+    return 0;
+}
+#endif
+
 #if !defined STARTUP_SETUP_WINDOW
 int32_t startwin_open(void) { return 0; }
 int32_t startwin_close(void) { return 0; }
@@ -73,7 +91,11 @@ static SDL_Window *sdl_window=NULL;
 static SDL_GLContext sdl_context=NULL;
 #endif
 
+#ifdef __PSP2__
+int32_t xres=960, yres=544, bpp=8, fullscreen=1, bytesperline = 960;
+#else
 int32_t xres=-1, yres=-1, bpp=0, fullscreen=0, bytesperline;
+#endif
 intptr_t frameplace=0;
 int32_t lockcount=0;
 char modechange=1;
@@ -303,7 +325,7 @@ void wm_setapptitle(const char *name)
 //
 
 /* XXX: libexecinfo could be used on systems without gnu libc. */
-#if !defined _WIN32 && defined __GNUC__ && !defined __OpenBSD__ && !(defined __APPLE__ && defined __BIG_ENDIAN__) && !defined GEKKO && !defined EDUKE32_TOUCH_DEVICES && !defined __OPENDINGUX__
+#if !defined _WIN32 && defined __GNUC__ && !defined __OpenBSD__ && !(defined __APPLE__ && defined __BIG_ENDIAN__) && !defined __PSP2__ && !defined GEKKO && !defined EDUKE32_TOUCH_DEVICES && !defined __OPENDINGUX__
 # define PRINTSTACKONSEGV 1
 # include <execinfo.h>
 #endif
@@ -397,6 +419,95 @@ void eduke32_exit_return(int retval)
 }
 #endif
 
+#ifdef __PSP2__
+uint8_t *framebuffer;
+
+vita2d_texture *fb_texture, *gpu_texture;
+
+uint32_t SCE_CTRL_CONFIRM;
+uint32_t SCE_CTRL_CANCEL;
+
+int get_x_text(vita2d_pgf *font, char *text) {
+    return (960 - vita2d_pgf_text_width(font, 1.0, text)) / 2;
+}
+
+uint32_t white;
+uint32_t yellow;
+uint32_t green;
+
+typedef struct credits_voice{
+    int x;
+    int y;
+    uint32_t *color;
+    char text[256];
+} credits_voice;
+
+#define INTRO_VOICES 8
+
+credits_voice intro[INTRO_VOICES] = {
+    {0, 100, &yellow, "NBlood Vita v.1.0"},
+    {0, 120, &white,  "by Rinnegatamante"},
+    {0, 200, &yellow, "Thanks to my distinguished Patroners:"},
+    {0, 220, &white,  "XandridFire"},
+    {0, 240, &white,  "Billy McLaughlin II"},
+    {0, 500, &green,  "Loading, please wait..."}
+};
+
+int psp2_main(unsigned int argc, void *argv) {
+    SceAppUtilInitParam appUtilParam;
+    SceAppUtilBootParam appUtilBootParam;
+    memset(&appUtilParam, 0, sizeof(SceAppUtilInitParam));
+    memset(&appUtilBootParam, 0, sizeof(SceAppUtilBootParam));
+    sceAppUtilInit(&appUtilParam, &appUtilBootParam);
+    int enterButton;
+    sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON, &enterButton);
+    
+    SCE_CTRL_CONFIRM = (enterButton == 0) ? SCE_CTRL_CIRCLE : SCE_CTRL_CROSS;
+    SCE_CTRL_CANCEL = (enterButton == 0) ? SCE_CTRL_CROSS : SCE_CTRL_CIRCLE;
+    
+    scePowerSetArmClockFrequency(444);
+    scePowerSetBusClockFrequency(222);
+    scePowerSetGpuClockFrequency(222);
+    scePowerSetGpuXbarClockFrequency(166);
+    sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
+    vita2d_init();
+    vita2d_set_vblank_wait(0);
+    
+    gpu_texture = vita2d_create_empty_texture_format(960, 544, SCE_GXM_TEXTURE_FORMAT_P8_1BGR);
+    vita2d_texture_set_filters(gpu_texture, SCE_GXM_TEXTURE_FILTER_LINEAR, SCE_GXM_TEXTURE_FILTER_LINEAR);
+	vita2d_texture_set_alloc_memblock_type(SCE_KERNEL_MEMBLOCK_TYPE_USER_RW);
+    fb_texture = vita2d_create_empty_texture_format(960, 544, SCE_GXM_TEXTURE_FORMAT_P8_1BGR);
+    
+    framebuffer = (uint8_t*)vita2d_texture_get_datap(fb_texture);
+    
+    baselayer_init();
+    
+    vita2d_pgf* font = vita2d_load_default_pgf();
+    white = RGBA8(0xFF, 0xFF, 0xFF, 0xFF);
+    yellow = RGBA8(0xFF, 0xFF, 0x00, 0xFF);
+    green = RGBA8(0x00, 0xFF, 0x00, 0xFF);
+    
+    int j, z;
+    for (j=0;j<INTRO_VOICES;j++){
+        intro[j].x = get_x_text(font, intro[j].text);
+    }
+    
+    for (j=0;j<3;j++){
+        vita2d_start_drawing();
+        for (z=0;z<INTRO_VOICES;z++){
+            vita2d_pgf_draw_text(font, intro[z].x, intro[z].y, *intro[z].color, 1.0, intro[z].text);
+        }
+        vita2d_end_drawing();
+        vita2d_wait_rendering_done();
+        vita2d_swap_buffers();
+    }
+
+    int r = app_main(argc, (const char **)argv);
+
+    return r;
+}
+#endif
+
 #ifdef _WIN32
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow)
 #elif defined __ANDROID__
@@ -410,6 +521,14 @@ int SDL_main(int argc, char *argv[])
 int main(int argc, char *argv[])
 #endif
 {
+#ifdef __PSP2__
+	SceUID main_thread = sceKernelCreateThread("EDuke32", psp2_main, 0x40, 0x800000, 0, 0, NULL);
+	if (main_thread >= 0){
+		sceKernelStartThread(main_thread, 0, NULL);
+		sceKernelWaitThreadEnd(main_thread, NULL, NULL);
+	}
+    return 0;
+#endif
 #ifdef __ANDROID__
     if (setjmp(eduke32_exit_jmp_buf))
     {
@@ -825,9 +944,9 @@ int32_t initinput(void)
             inputdevices |= 4;
 
             // KEEPINSYNC duke3d/src/gamedefs.h, mact/include/_control.h
-            joystick.numAxes = min(9, SDL_JoystickNumAxes(joydev));
-            joystick.numButtons = min(32, SDL_JoystickNumButtons(joydev));
-            joystick.numHats = min((36-joystick.numButtons)/4,SDL_JoystickNumHats(joydev));
+            joystick.numAxes = min(9, (int)SDL_JoystickNumAxes(joydev));
+            joystick.numButtons = min(32, (int)SDL_JoystickNumButtons(joydev));
+            joystick.numHats = min((36-joystick.numButtons)/4,(long int)SDL_JoystickNumHats(joydev));
             initprintf("Joystick 1 has %d axes, %d buttons, and %d hat(s).\n", joystick.numAxes, joystick.numButtons, joystick.numHats);
 
             joystick.pAxis = (int32_t *)Xcalloc(joystick.numAxes, sizeof(int32_t));

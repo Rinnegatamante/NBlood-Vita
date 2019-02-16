@@ -131,7 +131,7 @@ int32_t mouseReadAbs(vec2_t * const pResult, vec2_t const * const pInput)
     if (!g_mouseEnabled || !appactive || !g_mouseInsideWindow || (osd && osd->flags & OSD_CAPTURE))
         return 0;
 
-    int32_t const xwidth = max(scale(240<<16, xdim, ydim), 320<<16);
+    int32_t const xwidth = max(scale(240<<16, xdim, ydim), (int32_t)320<<16);
 
     pResult->x = scale(pInput->x, xwidth, xres) - ((xwidth>>1) - (320<<15));
     pResult->y = scale(pInput->y, 200<<16, yres);

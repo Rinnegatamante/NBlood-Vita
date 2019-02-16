@@ -972,8 +972,8 @@ static void editorDraw2dWall(int32_t i, int32_t posxe, int32_t posye, int32_t po
             {
                 // Red walls. Show them on equal-height walls ONLY with setting 2.
                 int32_t const bb = (z2 < z1);
-                int32_t const dx = mulscale11(sintable[(k+1024 + 1024*bb)&2047], min(4096, zoome)) / 2560;
-                int32_t const dy = scalescreeny(mulscale11(sintable[(k+512 + 1024*bb)&2047], min(4096, zoome)) / 2560);
+                int32_t const dx = mulscale11(sintable[(k+1024 + 1024*bb)&2047], min((int32_t)4096, zoome)) / 2560;
+                int32_t const dy = scalescreeny(mulscale11(sintable[(k+512 + 1024*bb)&2047], min((int32_t)4096, zoome)) / 2560);
 
                 editorDraw2dLineMiddle(dax, day, dax+dx, day+dy, col);
             }
@@ -981,8 +981,8 @@ static void editorDraw2dWall(int32_t i, int32_t posxe, int32_t posye, int32_t po
         else if (showheightindicators == 2)
         {
             // Show them on white walls ONLY with setting 2.
-            int32_t const dx = mulscale11(sintable[(k+2048)&2047], min(4096, zoome)) / 2560;
-            int32_t const dy = scalescreeny(mulscale11(sintable[(k+1536)&2047], min(4096, zoome)) / 2560);
+            int32_t const dx = mulscale11(sintable[(k+2048)&2047], min((int32_t)4096, zoome)) / 2560;
+            int32_t const dy = scalescreeny(mulscale11(sintable[(k+1536)&2047], min((int32_t)4096, zoome)) / 2560);
 
             editorDraw2dLineMiddle(dax, day, dax+dx, day+dy, col);
         }

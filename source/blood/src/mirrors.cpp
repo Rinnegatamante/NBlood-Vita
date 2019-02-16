@@ -369,7 +369,9 @@ void DrawMirrors(int x, int y, int z, fix16_t a, fix16_t horiz)
             }
             case 1:
             {
+#ifdef USE_OPENGL
                 r_rorphase = 1;
+#endif
                 int nSector = mirror[i].at4;
                 renderDrawRoomsQ16(x+mirror[i].at8, y+mirror[i].atc, z+mirror[i].at10, a, horiz, nSector|MAXSECTORS);
                 viewProcessSprites(x+mirror[i].at8, y+mirror[i].atc, z+mirror[i].at10);
@@ -379,12 +381,16 @@ void DrawMirrors(int x, int y, int z, fix16_t a, fix16_t horiz)
                 sector[nSector].floorstat = fstat;
                 for (int i = 0; i < 16; i++)
                     ClearBitString(gotpic, 4080+i);
+#ifdef USE_OPENGL
                 r_rorphase = 0;
+#endif
                 return;
             }
             case 2:
             {
+#ifdef USE_OPENGL
                 r_rorphase = 1;
+#endif
                 int nSector = mirror[i].at4;
                 renderDrawRoomsQ16(x+mirror[i].at8, y+mirror[i].atc, z+mirror[i].at10, a, horiz, nSector|MAXSECTORS);
                 viewProcessSprites(x+mirror[i].at8, y+mirror[i].atc, z+mirror[i].at10);
@@ -394,7 +400,9 @@ void DrawMirrors(int x, int y, int z, fix16_t a, fix16_t horiz)
                 sector[nSector].ceilingstat = cstat;
                 for (int i = 0; i < 16; i++)
                     ClearBitString(gotpic, 4080+i);
+#ifdef USE_OPENGL
                 r_rorphase = 0;
+#endif
                 return;
             }
             }

@@ -291,11 +291,11 @@ void MUSIC_SetVolume(int32_t volume)
 {
     if (MUSIC_SoundDevice == MIDIDEVICE_OPL)
     {
-        OPLMusic::MIDI_SetVolume(min(max(0, volume), 255));
+        OPLMusic::MIDI_SetVolume(min(max((int32_t)0, volume), (long int)255));
         return;
     }
-    volume = max(0, volume);
-    volume = min(volume, 255);
+    volume = max((int32_t)0, volume);
+    volume = min(volume, (long int)255);
 
     Mix_VolumeMusic(volume >> 1);  // convert 0-255 to 0-128.
 } // MUSIC_SetVolume

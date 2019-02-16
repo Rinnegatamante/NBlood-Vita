@@ -71,7 +71,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # define UPDATEINTERVAL 604800 // 1w
 # include "winbits.h"
 #else
-# ifndef GEKKO
+# if !defined(GEKKO) && !defined(__PSP2__)
 #  include <sys/ioctl.h>
 # endif
 #endif /* _WIN32 */
@@ -487,7 +487,7 @@ void PreloadCache(void)
 
             if (videoGetRenderMode() != REND_CLASSIC && totalclock - clock > (kTicRate>>2))
             {
-                int const percentComplete = min(100, tabledivide32_noinline(100 * cnt, nPrecacheCount));
+                int const percentComplete = min((int32_t)100, tabledivide32_noinline(100 * cnt, nPrecacheCount));
 
                 // this just prevents the loading screen percentage bar from making large jumps
                 while (percentDisplayed < percentComplete)

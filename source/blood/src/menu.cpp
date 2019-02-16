@@ -468,10 +468,12 @@ const char *pzTextureModeStrings[] = {
     "FILTERED"
 };
 
+#ifdef USE_OPENGL
 int nTextureModeValues[] = {
     TEXFILTER_OFF,
     TEXFILTER_ON
 };
+#endif
 
 const char *pzAnisotropyStrings[] = {
     "MAX",
@@ -558,8 +560,8 @@ CGameMenuItemTitle itemOptionsSoundTitle("SOUND SETUP", 1, 160, 20, 2038);
 CGameMenuItemZBool itemOptionsSoundSoundToggle("SOUND:", 3, 66, 60, 180, false, UpdateSoundToggle, NULL, NULL);
 CGameMenuItemZBool itemOptionsSoundMusicToggle("MUSIC:", 3, 66, 70, 180, false, UpdateMusicToggle, NULL, NULL);
 CGameMenuItemZBool itemOptionsSound3DToggle("3D AUDIO:", 3, 66, 80, 180, false, Update3DToggle, NULL, NULL);
-CGameMenuItemSlider itemOptionsSoundSoundVolume("SOUND VOLUME:", 3, 66, 90, 180, &FXVolume, 0, 256, 48, UpdateSoundVolume, -1, -1, kMenuSliderPercent);
-CGameMenuItemSlider itemOptionsSoundMusicVolume("MUSIC VOLUME:", 3, 66, 100, 180, &MusicVolume, 0, 256, 48, UpdateMusicVolume, -1, -1, kMenuSliderPercent);
+CGameMenuItemSlider itemOptionsSoundSoundVolume("SOUND VOLUME:", 3, 66, 90, 180, (int*)&FXVolume, 0, 256, 48, UpdateSoundVolume, -1, -1, kMenuSliderPercent);
+CGameMenuItemSlider itemOptionsSoundMusicVolume("MUSIC VOLUME:", 3, 66, 100, 180, (int*)&MusicVolume, 0, 256, 48, UpdateMusicVolume, -1, -1, kMenuSliderPercent);
 CGameMenuItemZCycle itemOptionsSoundSampleRate("SAMPLE RATE:", 3, 66, 110, 180, 0, UpdateSoundRate, pzSoundRateStrings, 3, 0);
 CGameMenuItemSlider itemOptionsSoundNumVoices("VOICES:", 3, 66, 120, 180, NumVoices, 16, 256, 16, UpdateNumVoices, -1, -1, kMenuSliderValue);
 CGameMenuItemZBool itemOptionsSoundCDToggle("REDBOOK AUDIO:", 3, 66, 130, 180, false, UpdateCDToggle, NULL, NULL);
@@ -1606,6 +1608,7 @@ void ResetVideoColor(CGameMenuItemChain *pItem)
 void SetupVideoPolymostMenu(CGameMenuItemChain *pItem)
 {
     UNREFERENCED_PARAMETER(pItem);
+#ifdef USE_OPENGL
     itemOptionsDisplayPolymostTextureMode.m_nFocus = 0;
     for (int i = 0; i < 2; i++)
     {
@@ -1632,23 +1635,36 @@ void SetupVideoPolymostMenu(CGameMenuItemChain *pItem)
     itemOptionsDisplayPolymostGlowTex.at20 = r_glowmapping;
     itemOptionsDisplayPolymost3DModels.at20 = usemodels;
     itemOptionsDisplayPolymostPaletteEmulation.at20 = r_usetileshades;
+#endif
 }
 
 void UpdateTextureMode(CGameMenuItemZCycle *pItem)
 {
+#ifdef USE_OPENGL
     gltexfiltermode = nTextureModeValues[pItem->m_nFocus];
     gltexapplyprops();
+#else
+	UNREFERENCED_PARAMETER(pItem);
+#endif
 }
 
 void UpdateAnisotropy(CGameMenuItemZCycle *pItem)
 {
+#ifdef USE_OPENGL
     glanisotropy = nAnisotropyValues[pItem->m_nFocus];
     gltexapplyprops();
+#else
+	UNREFERENCED_PARAMETER(pItem);
+#endif
 }
 
 void UpdateTrueColorTextures(CGameMenuItemZBool *pItem)
 {
+#ifdef USE_OPENGL
     usehightile = pItem->at20;
+#else
+	UNREFERENCED_PARAMETER(pItem);
+#endif
 }
 
 void DoModeChange(void)
@@ -1661,10 +1677,14 @@ void DoModeChange(void)
 
 void UpdateTexQuality(CGameMenuItemZCycle *pItem)
 {
+#ifdef USE_OPENGL
     r_downsize = pItem->m_nFocus;
     texcache_invalidate();
     r_downsizevar = r_downsize;
     DoModeChange();
+#else
+	UNREFERENCED_PARAMETER(pItem);
+#endif
 }
 
 void UpdatePreloadCache(CGameMenuItemZBool *pItem)
@@ -1674,31 +1694,52 @@ void UpdatePreloadCache(CGameMenuItemZBool *pItem)
 
 void UpdateTexCache(CGameMenuItemZCycle *pItem)
 {
+#ifdef USE_OPENGL
     glusetexcache = pItem->m_nFocus;
+#else
+	UNREFERENCED_PARAMETER(pItem);
+#endif
 }
 
 void UpdateDetailTex(CGameMenuItemZBool *pItem)
 {
+#ifdef USE_OPENGL
     r_detailmapping = pItem->at20;
+#else
+	UNREFERENCED_PARAMETER(pItem);
+#endif
 }
 
 void UpdateGlowTex(CGameMenuItemZBool *pItem)
 {
+#ifdef USE_OPENGL
     r_glowmapping = pItem->at20;
+#else
+	UNREFERENCED_PARAMETER(pItem);
+#endif
 }
 
 void Update3DModels(CGameMenuItemZBool *pItem)
 {
+#ifdef USE_OPENGL
     usemodels = pItem->at20;
+#else
+	UNREFERENCED_PARAMETER(pItem);
+#endif
 }
 
 void UpdatePaletteEmulation(CGameMenuItemZBool *pItem)
 {
+#ifdef USE_OPENGL
     r_usetileshades = pItem->at20;
+#else
+	UNREFERENCED_PARAMETER(pItem);
+#endif
 }
 
 void PreDrawDisplayPolymost(CGameMenuItem *pItem)
 {
+#ifdef USE_OPENGL
     if (pItem == &itemOptionsDisplayPolymostTexQuality)
         pItem->bEnable = usehightile;
     else if (pItem == &itemOptionsDisplayPolymostPreloadCache)
@@ -1711,6 +1752,9 @@ void PreDrawDisplayPolymost(CGameMenuItem *pItem)
         pItem->bEnable = usehightile;
     else if (pItem == &itemOptionsDisplayPolymostPaletteEmulation)
         pItem->bEnable = !(videoGetRenderMode() == REND_POLYMOST && r_useindexedcolortextures);
+#else
+	UNREFERENCED_PARAMETER(pItem);
+#endif
 }
 
 void UpdateSoundToggle(CGameMenuItemZBool *pItem)

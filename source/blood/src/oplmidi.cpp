@@ -577,7 +577,7 @@ int32_t MIDI_SetVolume(int32_t volume)
     if (_MIDI_Funcs == NULL)
         return MIDI_NullMidiModule;
 
-    _MIDI_TotalVolume = max(0, min(MIDI_MaxVolume, volume));
+    _MIDI_TotalVolume = max((int32_t)0, min((int32_t)MIDI_MaxVolume, volume));
     _MIDI_SendChannelVolumes();
 
     return MIDI_Ok;

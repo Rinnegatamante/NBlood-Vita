@@ -184,14 +184,14 @@ static void convertv6sectv7(struct sectortypev6 *from, sectortype *to)
     to->wallptr = from->wallptr;
     to->wallnum = from->wallnum;
     to->ceilingpicnum = from->ceilingpicnum;
-    to->ceilingheinum = max(min(((int32_t)from->ceilingheinum)<<5,32767),-32768);
+    to->ceilingheinum = max(min(((int32_t)from->ceilingheinum)<<5,(long int)32767),(long int)-32768);
     if ((from->ceilingstat&2) == 0) to->ceilingheinum = 0;
     to->ceilingshade = from->ceilingshade;
     to->ceilingpal = from->ceilingpal;
     to->ceilingxpanning = from->ceilingxpanning;
     to->ceilingypanning = from->ceilingypanning;
     to->floorpicnum = from->floorpicnum;
-    to->floorheinum = max(min(((int32_t)from->floorheinum)<<5,32767),-32768);
+    to->floorheinum = max(min(((int32_t)from->floorheinum)<<5,(long int)32767),(long int)-32768);
     if ((from->floorstat&2) == 0) to->floorheinum = 0;
     to->floorshade = from->floorshade;
     to->floorpal = from->floorpal;

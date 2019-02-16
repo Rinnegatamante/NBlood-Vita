@@ -346,7 +346,7 @@ int32_t MV_PlayVorbis3D(char *ptr, uint32_t length, int32_t loophow, int32_t pit
     // Ensure angle is within 0 - 127
     angle &= MV_MAXPANPOSITION;
 
-    return MV_PlayVorbis(ptr, length, loophow, -1, pitchoffset, max(0, 255 - distance),
+    return MV_PlayVorbis(ptr, length, loophow, -1, pitchoffset, max((int32_t)0, 255 - distance),
                          MV_PanTable[angle][vol].left, MV_PanTable[angle][vol].right, priority, volume, callbackval);
 }
 

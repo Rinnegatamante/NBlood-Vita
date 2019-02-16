@@ -1616,7 +1616,7 @@ int effectDetail[] = {
 
 uspritetype *viewAddEffect(int nTSprite, VIEW_EFFECT nViewEffect)
 {
-    dassert(nViewEffect >= 0 && nViewEffect < kViewEffectMax);
+    dassert(nViewEffect < kViewEffectMax);
     uspritetype *pTSprite = &tsprite[nTSprite];
     if (gDetail < effectDetail[nViewEffect] || nTSprite >= kMaxViewSprites) return NULL;
     switch (nViewEffect)
@@ -1960,11 +1960,13 @@ void viewProcessSprites(int cX, int cY, int cZ)
                 break;
             case 1:
             {
+#ifdef USE_OPENGL
                 if (videoGetRenderMode() >= REND_POLYMOST && usemodels && md_tilehasmodel(pTSprite->picnum, pTSprite->pal) >= 0 && !(spriteext[nSprite].flags&SPREXT_NOTMD))
                 {
                     pTSprite->cstat &= ~4;
                     break;
                 }
+#endif
                 int dX = cX - pTSprite->x;
                 int dY = cY - pTSprite->y;
                 RotateVector(&dX, &dY, 128-pTSprite->ang);
@@ -1982,11 +1984,13 @@ void viewProcessSprites(int cX, int cY, int cZ)
             }
             case 2:
             {
+#ifdef USE_OPENGL
                 if (videoGetRenderMode() >= REND_POLYMOST && usemodels && md_tilehasmodel(pTSprite->picnum, pTSprite->pal) >= 0 && !(spriteext[nSprite].flags&SPREXT_NOTMD))
                 {
                     pTSprite->cstat &= ~4;
                     break;
                 }
+#endif
                 int dX = cX - pTSprite->x;
                 int dY = cY - pTSprite->y;
                 RotateVector(&dX, &dY, 128-pTSprite->ang);
@@ -2012,8 +2016,10 @@ void viewProcessSprites(int cX, int cY, int cZ)
             case 6:
             case 7:
             {
+#ifdef USE_OPENGL
                 if (videoGetRenderMode() >= REND_POLYMOST && usemodels && md_tilehasmodel(pTSprite->picnum, pTSprite->pal) >= 0 && !(spriteext[nSprite].flags&SPREXT_NOTMD))
                     break;
+#endif
                 // Can be overridden by def script
                 if (usevoxels && gDetail >= 4 && videoGetRenderMode() != REND_POLYMER && tiletovox[pTSprite->picnum] == -1)
                 {
@@ -2594,10 +2600,13 @@ void UpdateDacs(int nPalette, bool bNoTint)
     if (videoGetRenderMode() >= REND_POLYMOST)
     {
         gLastPal = 0;
+#ifdef USE_OPENGL
         polytint_t *tint = &hictinting[MAXPALOOKUPS-1];
+#endif
         int nRed = 0;
         int nGreen = 0;
         int nBlue = 0;
+#ifdef USE_OPENGL
         tint->f = 0;
         switch (nPalette)
         {
@@ -2637,6 +2646,7 @@ void UpdateDacs(int nPalette, bool bNoTint)
             tint->b = 255;
             break;
         }
+#endif
         if (!bNoTint)
         {
             nRed += gView->at377;
@@ -2942,7 +2952,9 @@ void viewDrawScreen(void)
         char v10 = 0;
         char vc = powerupCheck(gView, 28) > 0;
         char v4 = powerupCheck(gView, 21) > 0;
+#ifdef USE_OPENGL
         renderSetRollAngle(0);
+#endif
         if (v78 || vc)
         {
             if (videoGetRenderMode() == REND_CLASSIC)
@@ -2960,8 +2972,10 @@ void viewDrawScreen(void)
                 }
                 renderSetAspect(mulscale16(vr, dmulscale32(Cos(nAng), 262144, Sin(nAng), 163840)), yxaspect);
             }
+#ifdef USE_OPENGL
             else
                 renderSetRollAngle(v78);
+#endif
         }
         else if (v4 && gNetPlayers > 1)
         {
@@ -3008,7 +3022,7 @@ void viewDrawScreen(void)
                 vd4 += QRandom2(nValue >> 4);
                 vd0 += QRandom2(nValue);
             }
-            CalcOtherPosition(pOther->pSprite, &vd8, &vd4, &vd0, &vcc, v50, 0);
+            CalcOtherPosition((spritetype*)pOther->pSprite, &vd8, &vd4, &vd0, &vcc, v50, (fix16_t)0);
             CheckLink(&vd8, &vd4, &vd0, &vcc);
             if (IsUnderwaterSector(vcc))
             {
@@ -3018,7 +3032,7 @@ void viewDrawScreen(void)
             memcpy(gotpic+510, otherMirrorGotpic, 2);
             g_visibility = (int32_t)(ClipLow(gVisibility-32*pOther->at362, 0) * (numplayers > 1 ? 1.f : r_ambientlightrecip));
             int vc4, vc8;
-            getzsofslope(vcc, vd8, vd4, &vc8, &vc4);
+            getzsofslope(vcc, vd8, vd4, (int32_t*)&vc8, (int32_t*)&vc4);
             if (vd0 >= vc4)
             {
                 vd0 = vc4-(8<<4);
@@ -3092,7 +3106,7 @@ RORHACKOTHER:
         g_visibility = (int32_t)(ClipLow(gVisibility - 32 * gView->at362 - unk, 0) * (numplayers > 1 ? 1.f : r_ambientlightrecip));
         cA = (cA + interpolateangfix16(fix16_from_int(deliriumTurnO), fix16_from_int(deliriumTurn), gInterpolate)) & 0x7ffffff;
         int vfc, vf8;
-        getzsofslope(nSectnum, cX, cY, &vfc, &vf8);
+        getzsofslope(nSectnum, cX, cY, (int32_t*)&vfc, (int32_t*)&vf8);
         if (cZ >= vf8)
         {
             cZ = vf8-(8<<8);
@@ -3344,6 +3358,7 @@ char pzLoadingScreenText1[256], pzLoadingScreenText2[256], pzLoadingScreenText3[
 void viewLoadingScreenWide(void)
 {
     videoClearScreen(0);
+#ifdef USE_OPENGL
     if ((blood_globalflags&BLOOD_FORCE_WIDELOADSCREEN) || (bLoadScreenCrcMatch && !(usehightile && h_xsize[kLoadScreen])))
     {
         if (yxaspect >= 65536)
@@ -3364,6 +3379,7 @@ void viewLoadingScreenWide(void)
         }
     }
     else
+ #endif
         rotatesprite(160<<16, 100<<16, 65536, 0, kLoadScreen, 0, 0, 64+8+2, 0, 0, xdim-1, ydim-1);
 }
 

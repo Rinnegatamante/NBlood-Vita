@@ -110,6 +110,7 @@ int tileInit(char a1, const char *a2)
             SetBitString((char*)voxreserve, voxelIndex[i]);
     }
 
+#ifdef USE_OPENGL
     for (int i = 0; i < kMaxVoxels; i++)
     {
         DICTNODE *hVox = gSysRes.Lookup(i, "KVX");
@@ -118,6 +119,7 @@ int tileInit(char a1, const char *a2)
         char *pVox = (char*)gSysRes.Load(hVox);
         voxmodels[i] = loadkvxfrombuf(pVox, hVox->size);
     }
+#endif
     artLoaded = 1;
 
     return 1;
