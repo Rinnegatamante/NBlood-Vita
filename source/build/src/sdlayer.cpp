@@ -442,7 +442,7 @@ typedef struct credits_voice{
     char text[256];
 } credits_voice;
 
-#define INTRO_VOICES 8
+#define INTRO_VOICES 6
 
 credits_voice intro[INTRO_VOICES] = {
     {0, 100, &yellow, "NBlood Vita v.1.0"},
@@ -522,7 +522,7 @@ int main(int argc, char *argv[])
 #endif
 {
 #ifdef __PSP2__
-	SceUID main_thread = sceKernelCreateThread("EDuke32", psp2_main, 0x40, 0x800000, 0, 0, NULL);
+	SceUID main_thread = sceKernelCreateThread("NBlood", psp2_main, 0x40, 0x800000, 0, 0, NULL);
 	if (main_thread >= 0){
 		sceKernelStartThread(main_thread, 0, NULL);
 		sceKernelWaitThreadEnd(main_thread, NULL, NULL);
@@ -751,6 +751,7 @@ int32_t initsystem(void)
 #endif
 #endif
 
+#ifndef __PSP2__
 #ifndef _WIN32
         const char *drvname = SDL_GetVideoDriver(0);
 
@@ -758,6 +759,7 @@ int32_t initsystem(void)
             initprintf("Using \"%s\" video driver\n", drvname);
 #endif
         wm_setapptitle(apptitle);
+#endif
     }
 
     return 0;
@@ -1886,6 +1888,14 @@ void videoShowFrame(int32_t w)
 
     if (offscreenrendering) return;
 
+#ifdef __PSP2__
+	memcpy(vita2d_texture_get_datap(gpu_texture),vita2d_texture_get_datap(fb_texture),vita2d_texture_get_stride(gpu_texture)*vita2d_texture_get_height(gpu_texture));
+    vita2d_start_drawing();
+    vita2d_draw_texture(gpu_texture, 0, 0);
+    vita2d_end_drawing();
+    vita2d_wait_rendering_done();
+	vita2d_swap_buffers();
+#else
     if (lockcount)
     {
         printf("Frame still locked %d times when showframe() called.\n", lockcount);
@@ -1903,6 +1913,7 @@ void videoShowFrame(int32_t w)
         sdl_surface = SDL_GetWindowSurface(sdl_window);
         SDL_UpdateWindowSurface(sdl_window);
     }
+#endif
 }
 #endif
 //
@@ -1922,11 +1933,26 @@ int32_t videoUpdatePalette(int32_t start, int32_t num)
     else
 #endif
     {
+#ifdef __PSP2__
+		uint8_t *pal = (uint8_t*)curpalettefaded;
+		uint8_t r, g, b;
+		uint32_t* palette_tbl = (uint32_t*)vita2d_texture_get_palette(fb_texture);
+		uint32_t* palette_tbl2 = (uint32_t*)vita2d_texture_get_palette(gpu_texture);
+		for (int i = 0; i < 256; i++) {
+			r = pal[0];
+			g = pal[1];
+			b = pal[2];
+			palette_tbl[i] = r | (g << 8) | (b << 16) | (0xFF << 24);
+			palette_tbl2[i] = r | (g << 8) | (b << 16) | (0xFF << 24);
+			pal += 4;
+		}
+#else
         if (sdl_surface)
             softsurface_setPalette(curpalettefaded,
                                    sdl_surface->format->Rmask,
                                    sdl_surface->format->Gmask,
                                    sdl_surface->format->Bmask);
+#endif
     }
 
     return 0;
