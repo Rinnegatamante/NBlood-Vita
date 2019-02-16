@@ -1056,8 +1056,8 @@ ifeq ($$(PLATFORM),PSP2)
 	vita-elf-create $($1_$2).elf $($1_$2).velf
 	vita-make-fself -s $($1_$2).velf $($1_$2).bin
 	cp $($1_$2).bin platform/PSVita/eboot.bin
-	vita-mksfoex -s TITLE_ID=EDUKE0032 -d ATTRIBUTE2=12 "EDuke32" platform/PSVita/sce_sys/param.sfo
-	7z a -tzip ./EDuke32.vpk -r ./platform/PSVita/sce_sys ./platform/PSVita/eboot.bin
+	vita-mksfoex -s TITLE_ID=BLOOD0032 -d ATTRIBUTE2=12 "Blood" platform/PSVita/sce_sys/param.sfo
+	7z a -tzip ./Blood.vpk -r ./platform/PSVita/sce_sys ./platform/PSVita/eboot.bin
 else
 ifneq ($$(STRIP),)
 	$$(STRIP) $$@ $$($1_$2_stripflags)
