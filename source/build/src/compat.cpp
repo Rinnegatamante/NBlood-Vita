@@ -133,6 +133,10 @@ char *Bgethomedir(void)
     if (drv)
         drv[1] = '\0';
     return Xstrdup(cwd);
+#elif defined(__PSP2__)
+	char cwd[BMAX_PATH] = {0};
+	getcwd(cwd, BMAX_PATH);
+	return Xstrdup(cwd);
 #else
     char *e = getenv("HOME");
     if (!e) return NULL;

@@ -1088,8 +1088,11 @@ int32_t kopen4load(const char *filename, char searchfirst)
     return h;
 }
 
+#ifdef __PSP2__
+char g_modDir[BMAX_PATH] = "ux0:data/NBlood";
+#else
 char g_modDir[BMAX_PATH] = "/";
-
+#endif
 int32_t kopen4loadfrommod(const char *fileName, char searchfirst)
 {
     int kFile = -1;
