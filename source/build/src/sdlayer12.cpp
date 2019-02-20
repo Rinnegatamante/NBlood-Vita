@@ -449,6 +449,14 @@ void videoShowFrame(int32_t w)
 
     if (offscreenrendering) return;
 
+#ifdef __PSP2__
+	memcpy(vita2d_texture_get_datap(gpu_texture),vita2d_texture_get_datap(fb_texture),vita2d_texture_get_stride(gpu_texture)*vita2d_texture_get_height(gpu_texture));
+    vita2d_start_drawing();
+    vita2d_draw_texture(gpu_texture, 0, 0);
+    vita2d_end_drawing();
+    vita2d_wait_rendering_done();
+	vita2d_swap_buffers();
+#else
     if (lockcount)
     {
         printf("Frame still locked %d times when showframe() called.\n", lockcount);
@@ -460,6 +468,7 @@ void videoShowFrame(int32_t w)
     if (SDL_MUSTLOCK(sdl_surface)) SDL_UnlockSurface(sdl_surface);
 
     SDL_Flip(sdl_surface);
+#endif
 }
 
 

@@ -482,7 +482,7 @@ int psp2_main(unsigned int argc, void *argv) {
     
     baselayer_init();
     
-    vita2d_pgf* font = vita2d_load_default_pgf();
+/*    vita2d_pgf* font = vita2d_load_default_pgf();
     white = RGBA8(0xFF, 0xFF, 0xFF, 0xFF);
     yellow = RGBA8(0xFF, 0xFF, 0x00, 0xFF);
     green = RGBA8(0x00, 0xFF, 0x00, 0xFF);
@@ -491,7 +491,7 @@ int psp2_main(unsigned int argc, void *argv) {
     for (j=0;j<INTRO_VOICES;j++){
         intro[j].x = get_x_text(font, intro[j].text);
     }
-    
+   
     for (j=0;j<3;j++){
         vita2d_start_drawing();
         for (z=0;z<INTRO_VOICES;z++){
@@ -500,7 +500,7 @@ int psp2_main(unsigned int argc, void *argv) {
         vita2d_end_drawing();
         vita2d_wait_rendering_done();
         vita2d_swap_buffers();
-    }
+    }*/
 
     int r = app_main(argc, (const char **)argv);
 
@@ -1811,11 +1811,20 @@ void videoBeginDrawing(void)
     }
 #endif
 
+#ifdef __PSP2__
+	frameplace = (intptr_t)framebuffer;
+#else
     frameplace = (intptr_t)softsurface_getBuffer();
-    if (modechange)
+#endif
+	if (modechange)
     {
+#ifdef __PSP2__
+        bytesperline = xres;
+		calc_ylookup(bytesperline, yres);
+#else
         bytesperline = xdim;
         calc_ylookup(bytesperline, ydim);
+#endif
         modechange=0;
     }
 }
