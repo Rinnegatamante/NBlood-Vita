@@ -39,7 +39,7 @@ void LOG(const char *format, ...) {
 	sprintf(msg, "%s\n", msg);
 	FILE* log = fopen("ux0:/data/eDuke32.log", "a+");
 	if (log != NULL) {
-		fwrite(msg, 1, 512, log);
+		fwrite(msg, 1, strlen(msg), log);
 		fclose(log);
 	}
 }
