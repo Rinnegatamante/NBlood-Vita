@@ -445,7 +445,7 @@ ifeq ($(RELEASE),0)
 
     LTO := 0
 else
-    OPTLEVEL := 2
+    OPTLEVEL := 0
     LTO := 1
 endif
 
@@ -566,7 +566,7 @@ else ifeq ($(PLATFORM),WII)
     COMPILERFLAGS += -DGEKKO -D__POWERPC__ -I$(LIBOGC_INC)
     LIBDIRS += -L$(LIBOGC_LIB)
 else ifeq ($(PLATFORM),PSP2)
-    COMMONFLAGS += -mfpu=neon -mcpu=cortex-a9 -O0 -g -w -ffunction-sections -fdata-sections -fpermissive
+    COMMONFLAGS += -mfpu=neon -mcpu=cortex-a9 -g -w -ffunction-sections -fdata-sections -fpermissive
     COMPILERFLAGS += -D__PSP2__
     LINKERFLAGS += -Wl,-q
 else ifeq ($(PLATFORM),$(filter $(PLATFORM),DINGOO GCW))
