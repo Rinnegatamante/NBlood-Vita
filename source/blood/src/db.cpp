@@ -1095,8 +1095,10 @@ void dbLoadMap(const char *pPath, int *pX, int *pY, int *pZ, short *pAngle, shor
         ThrowError("Corrupted Shareware Map file");
     }
 
+#ifdef USE_OPENGL
     if (videoGetRenderMode() == REND_POLYMER)
         polymer_loadboard();
+#endif
 
     if ((header.version & 0xff00) == 0x600)
     {
