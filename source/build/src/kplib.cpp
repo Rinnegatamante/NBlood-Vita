@@ -1408,7 +1408,7 @@ static int32_t kpegrend(const char *kfilebuf, int32_t kfilength,
                     zz += dctx[z]*dcty[z];
                 }
                 z = zz*64*sizeof(int16_t);
-                dctbuf = (int16_t *)Xmalloc(z); if (!dctbuf) return -1;
+                dctbuf = (int16_t *)Bmalloc(z); if (!dctbuf) return -1;
                 Bmemset(dctbuf,0,z);
                 for (z=zz=0; z<gnumcomponents; z++) { dctptr[z] = &dctbuf[zz*64]; zz += dctx[z]*dcty[z]; }
             }
@@ -2401,17 +2401,19 @@ static int32_t kzhashead[256], kzhashpos, kzlastfnam = -1, kzhashsiz, kzdirnamhe
 
 static int32_t kzcheckhashsiz(int32_t siz)
 {
+	
     if (!kzhashbuf) //Initialize hash table on first call
     {
         Bmemset(kzhashead,-1,sizeof(kzhashead));
-        kzhashbuf = (char *)Xmalloc(KZHASHINITSIZE); if (!kzhashbuf) return 0;
+        kzhashbuf = (char *)Bmalloc(KZHASHINITSIZE); if (!kzhashbuf) return 0;
         kzhashpos = 0; kzlastfnam = -1; kzhashsiz = KZHASHINITSIZE; kzdirnamhead = -1;
     }
+	
     if (kzhashpos+siz > kzhashsiz) //Make sure string fits in kzhashbuf
     {
         int32_t i = kzhashsiz; do { i <<= 1; }
         while (kzhashpos+siz > i);
-        kzhashbuf = (char *)Xrealloc(kzhashbuf,i); if (!kzhashbuf) return 0;
+        kzhashbuf = (char *)Brealloc(kzhashbuf,i); if (!kzhashbuf) return 0;
         kzhashsiz = i;
     }
     return 1;
@@ -2433,7 +2435,7 @@ static int32_t kzcheckhash(const char *filnam, char **zipnam, int32_t *fileoffs,
 
     if (!kzhashbuf) return 0;
     if (filnam[0] == '|') filnam++;
-    for (i=kzhashead[kzcalchash(filnam)]; i>=0; i=(B_UNBUF32(&kzhashbuf[i])))
+    for (i=kzhashead[kzcalchash(filnam)]; i>=0; i=(B_UNBUF32(&kzhashbuf[i]))) {
         if (!filnamcmp(filnam,&kzhashbuf[i+21]))
         {
             (*zipnam) = &kzhashbuf[B_UNBUF32(&kzhashbuf[i+8])];
@@ -2442,6 +2444,7 @@ static int32_t kzcheckhash(const char *filnam, char **zipnam, int32_t *fileoffs,
             (*iscomp) = kzhashbuf[i+20];
             return 1;
         }
+	}
     return 0;
 }
 
@@ -2573,7 +2576,7 @@ intptr_t kzopen(const char *filnam)
     FILE *fil;
     int32_t i, fileoffs, fileleng;
     char tempbuf[46+260], *zipnam, iscomp;
-
+	
     //kzfs.fil = 0;
     if (filnam[0] != '|') //Search standalone file first
     {
@@ -2590,6 +2593,9 @@ intptr_t kzopen(const char *filnam)
     }
     if (kzcheckhash(filnam,&zipnam,&fileoffs,&fileleng,&iscomp)) //Then check mounted ZIP/GRP files
     {
+#ifdef __PSP2__
+		if (zipnam[0] == '.'){ zipnam += 2; }
+#endif
         fil = fopen(zipnam,"rb"); if (!fil) return 0;
         fseek(fil,fileoffs,SEEK_SET);
         if (!iscomp) //Must be from GRP file

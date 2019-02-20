@@ -761,7 +761,13 @@ void OSD_SetLogFile(const char *fn)
     if (!fn)
         return;
 
+#ifdef __PSP2__
+	char fname[256];
+	sprintf(fname, "ux0:data/NBlood/%s", fn);
+    osdlog = Bfopen(fname, "w");
+#else
     osdlog = Bfopen(fn, "w");
+#endif
 
     if (osdlog)
     {
