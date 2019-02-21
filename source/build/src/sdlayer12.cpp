@@ -193,6 +193,8 @@ uint64_t timerGetTicksU64(void)
     return ticks;
 # elif defined GEKKO
     return ticks_to_nanosecs(gettime());
+# elif defined __PSP2__
+	return sceKernelGetProcessTimeWide();
 # else
     // Blar. This pragma is unsupported on earlier GCC versions.
     // At least we'll get a warning and a reference to this line...
@@ -214,6 +216,8 @@ uint64_t timerGetFreqU64(void)
     return 1000000000;
 # elif defined GEKKO
     return TB_NSPERSEC;
+# elif defined __PSP2__
+	return 1000000;
 # else
     return 1000;
 # endif
