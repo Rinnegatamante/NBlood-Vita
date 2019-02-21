@@ -69,6 +69,12 @@ struct DEMOHEADER
 
 #pragma pack(pop)
 
+struct DEMOCHAIN
+{
+    DEMOCHAIN *pNext;
+    char zName[BMAX_PATH];
+};
+
 class CDemo {
 public:
     CDemo();
@@ -95,8 +101,10 @@ public:
     DEMOHEADER atf;
     GAMEOPTIONS m_gameOptions;
     GINPUT at1aa[kInputBufferSize];
-    char at59aa[5][13];
+    const char **pzDemoFile;
     int at59eb;
+    DEMOCHAIN *pFirstDemo;
+    DEMOCHAIN *pCurrentDemo;
     int at59ef;
 };
 

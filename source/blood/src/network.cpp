@@ -629,6 +629,7 @@ void netWaitForEveryone(char a1)
         if (keystatus[sc_Escape] && a1)
             exit(0);
         G_HandleAsync();
+		faketimerhandler();
         for (p = connecthead; p >= 0; p = connectpoint2[p])
             if (gPlayerReady[p] < gPlayerReady[myconnectindex])
                 break;
@@ -1353,11 +1354,13 @@ void faketimerhandler(void)
     timerUpdate();
     if (gNetMode != NETWORK_NONE && gNetENetInit)
         netUpdate();
+#if 0
     if (gGameClock >= gNetFifoClock && ready2send)
     {
         gNetFifoClock += 4;
         netGetInput();
     }
+#endif
     //if (gNetMode != NETWORK_NONE && gNetENetInit)
     //    enet_host_service(gNetMode == NETWORK_SERVER ? gNetENetServer : gNetENetClient, NULL, 0);
 }

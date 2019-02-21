@@ -629,7 +629,7 @@ void fakeMoveDude(spritetype *pSprite)
     int nLowerLink = gLowerLink[nSector];
     if (nUpperLink >= 0 && (sprite[nUpperLink].type == 9 || sprite[nUpperLink].type == 13))
         bDepth = 1;
-    if (nLowerLink >= 0 && (sprite[nLowerLink].type == 10 || sprite[nUpperLink].type == 14))
+    if (nLowerLink >= 0 && (sprite[nLowerLink].type == 10 || sprite[nLowerLink].type == 14))
         bDepth = 1;
     if (pPlayer)
         wd += 16;
@@ -2021,7 +2021,7 @@ void viewProcessSprites(int cX, int cY, int cZ)
                     break;
 #endif
                 // Can be overridden by def script
-                if (usevoxels && gDetail >= 4 && videoGetRenderMode() != REND_POLYMER && tiletovox[pTSprite->picnum] == -1)
+                if (usevoxels && gDetail >= 4 && videoGetRenderMode() != REND_POLYMER && tiletovox[pTSprite->picnum] == -1 && voxelIndex[pTSprite->picnum] != -1)
                 {
                     if ((pTSprite->hitag&16) == 0)
                     {
@@ -2869,6 +2869,7 @@ void viewDrawScreen(void)
             newaspect_enable = 1;
             videoSetCorrectedAspect();
         }
+		renderSetAspect(Blrintf(float(viewingrange) * tanf(gFov * (PI/360.f))), yxaspect);
         int cX = gView->pSprite->x;
         int cY = gView->pSprite->y;
         int cZ = gView->at67;
@@ -3238,17 +3239,18 @@ RORHACK:
         }
         if (powerupCheck(gView, 39) > 0)
         {
-            rotatesprite(0, 200<<16, 65536, 0, 2358, 0, 0, 22, gViewX0, gViewY0, gViewX1, gViewY1);
-            rotatesprite(320<<16, 200<<16, 65536, 1024, 2358, 0, 0, 18, gViewX0, gViewY0, gViewX1, gViewY1);
+            rotatesprite(0, 200<<16, 65536, 0, 2358, 0, 0, 256+22, gViewX0, gViewY0, gViewX1, gViewY1);
+            rotatesprite(320<<16, 200<<16, 65536, 1024, 2358, 0, 0, 512+18, gViewX0, gViewY0, gViewX1, gViewY1);
         }
         if (v4 && gNetPlayers > 1)
         {
             DoLensEffect();
+			viewingRange = viewingrange;
+            yxAspect = yxaspect;
             renderSetAspect(65536, 54613);
             rotatesprite(280<<16, 35<<16, 53248, 512, 4077, v10, v14, 512+6, gViewX0, gViewY0, gViewX1, gViewY1);
             rotatesprite(280<<16, 35<<16, 53248, 0, 1683, v10, 0, 512+35, gViewX0, gViewY0, gViewX1, gViewY1);
-            //renderSetAspect(65536, divscale16(xdim*200, ydim*320));
-            videoSetCorrectedAspect();
+            renderSetAspect(viewingRange, yxAspect);
         }
         if (powerupCheck(gView, 14) > 0)
         {
@@ -3360,7 +3362,10 @@ void viewLoadingScreenWide(void)
     videoClearScreen(0);
 #ifdef USE_OPENGL
     if ((blood_globalflags&BLOOD_FORCE_WIDELOADSCREEN) || (bLoadScreenCrcMatch && !(usehightile && h_xsize[kLoadScreen])))
-    {
+#else
+	if ((blood_globalflags&BLOOD_FORCE_WIDELOADSCREEN) || bLoadScreenCrcMatch)
+#endif
+	{
         if (yxaspect >= 65536)
         {
             rotatesprite(160<<16, 100<<16, 65536, 0, kLoadScreen, 0, 0, 1024+64+8+2, 0, 0, xdim-1, ydim-1);
@@ -3379,7 +3384,6 @@ void viewLoadingScreenWide(void)
         }
     }
     else
- #endif
         rotatesprite(160<<16, 100<<16, 65536, 0, kLoadScreen, 0, 0, 64+8+2, 0, 0, xdim-1, ydim-1);
 }
 

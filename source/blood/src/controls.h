@@ -103,7 +103,7 @@ struct GINPUT
 
 extern GINPUT gInput;
 extern bool bSilentAim;
-extern bool gMouseAim;
+extern int32_t gMouseAim;
 
 int32_t ctrlCheckAllInput(void);
 void ctrlClearAllInput(void);

@@ -88,7 +88,7 @@ char CommbatMacro[MAXRIDECULE][MAXRIDECULELENGTH];
 char szPlayerName[MAXPLAYERNAME];
 int32_t gTurnSpeed;
 int32_t gDetail;
-//int32_t gMouseAim;
+int32_t gMouseAim;
 int32_t gAutoAim;
 int32_t gWeaponSwitch;
 int32_t gAutoRun;
@@ -115,10 +115,10 @@ int32_t gRunKeyMode;
 bool gNoClip;
 bool gInfiniteAmmo;
 bool gFullMap;
-bool gMouseAim;
 int32_t gUpscaleFactor;
 int32_t gBrightness;
 int32_t gLevelStats;
+int32_t gFov;
 
 int32_t CONFIG_FunctionNameToNum(const char *func)
 {
@@ -375,6 +375,7 @@ void CONFIG_SetDefaults(void)
     //ud.weaponscale            = 100;
     //ud.weaponsway             = 1;
     //ud.weaponswitch           = 3;  // new+empty
+	gFov = 90;
     gViewSize = 2;
     gTurnSpeed = 92;
     gDetail = 4;
@@ -785,10 +786,14 @@ void CONFIG_WriteSettings(void) // save binds and aliases to <cfgname>_settings.
     char *ptr = Xstrdup(SetupFilename);
     char filename[BMAX_PATH];
 
+#ifdef __PSP2__
+	Bsprintf(filename, "ux0:data/NBlood/settings.cfg");
+#else
     if (!Bstrcmp(SetupFilename, SETUPFILENAME))
         Bsprintf(filename, "settings.cfg");
     else
         Bsprintf(filename, "%s_settings.cfg", strtok(ptr, "."));
+#endif
 
     BFILE *fp = Bfopen(filename, "wt");
 
