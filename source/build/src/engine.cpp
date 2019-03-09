@@ -43,7 +43,7 @@ L_State g_engState;
 //////////
 // Compilation switches for optional/extended engine features
 
-#if !defined(__arm__) && !defined(GEKKO)
+#if (defined(__PSP2__)) || (!defined(__arm__) && !defined(GEKKO))
 # define HIGH_PRECISION_SPRITE
 #endif
 
