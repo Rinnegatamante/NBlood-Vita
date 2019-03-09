@@ -307,7 +307,7 @@ void writesettings(void) // save binds and aliases to <cfgname>_m32_settings.cfg
     char tempbuf[128];
 
 #ifdef __PSP2__
-	Bsprintf(tempbuf, "ux0:data/NBlood/settings.cfg");
+	Bsprintf(tempbuf, "ux0:data/NBlood/m32_settings.cfg");
 #else
     if (!Bstrcmp(setupfilename, defaultsetupfilename))
         Bsprintf(tempbuf, "m32_settings.cfg");

@@ -1,3 +1,8 @@
+*.elf
+*.velf
+*.vpk
+*.sfo
+*.bin
 
 obj/
 
