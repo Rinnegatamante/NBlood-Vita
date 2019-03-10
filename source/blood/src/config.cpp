@@ -277,11 +277,14 @@ void CONFIG_SetDefaults(void)
     else
 # endif
     {
-        gSetup.xdim = 1024;
-        gSetup.ydim = 768;
+        gSetup.xdim = 960;
+        gSetup.ydim = 544;
     }
 #endif
-
+#ifdef __PSP2__
+	gSetup.xdim = 960;
+    gSetup.ydim = 544;
+#endif
 #ifdef USE_OPENGL
     gSetup.bpp = 32;
 #else
