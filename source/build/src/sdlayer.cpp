@@ -442,14 +442,16 @@ typedef struct credits_voice{
     char text[256];
 } credits_voice;
 
-#define INTRO_VOICES 6
+#define INTRO_VOICES 8
 
 credits_voice intro[INTRO_VOICES] = {
     {0, 100, &yellow, "NBlood Vita v.1.0"},
     {0, 120, &white,  "by Rinnegatamante"},
     {0, 200, &yellow, "Thanks to my distinguished Patroners:"},
     {0, 220, &white,  "XandridFire"},
-    {0, 240, &white,  "Billy McLaughlin II"},
+    {0, 240, &white,  "RaveHeart"},
+	{0, 260, &white,  "nobodywasishere"},
+	{0, 280, &white,  "Tain Sueiras"},
     {0, 500, &green,  "Loading, please wait..."}
 };
 
@@ -482,7 +484,7 @@ int psp2_main(unsigned int argc, void *argv) {
     
     baselayer_init();
     
-/*    vita2d_pgf* font = vita2d_load_default_pgf();
+    vita2d_pgf* font = vita2d_load_default_pgf();
     white = RGBA8(0xFF, 0xFF, 0xFF, 0xFF);
     yellow = RGBA8(0xFF, 0xFF, 0x00, 0xFF);
     green = RGBA8(0x00, 0xFF, 0x00, 0xFF);
@@ -500,7 +502,7 @@ int psp2_main(unsigned int argc, void *argv) {
         vita2d_end_drawing();
         vita2d_wait_rendering_done();
         vita2d_swap_buffers();
-    }*/
+    }
 
     int r = app_main(argc, (const char **)argv);
 

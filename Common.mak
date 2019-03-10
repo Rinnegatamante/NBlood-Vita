@@ -445,7 +445,7 @@ ifeq ($(RELEASE),0)
 
     LTO := 0
 else
-    OPTLEVEL := 0
+    OPTLEVEL := 2
     LTO := 1
 endif
 
