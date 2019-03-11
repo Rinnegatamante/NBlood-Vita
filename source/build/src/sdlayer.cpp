@@ -504,9 +504,9 @@ int psp2_main(unsigned int argc, void *argv) {
         vita2d_swap_buffers();
     }
 
-    int r = app_main(argc, (const char **)argv);
+	buildkeytranslationtable();
 
-    return r;
+    return app_main(argc, (const char **)argv);
 }
 #endif
 
