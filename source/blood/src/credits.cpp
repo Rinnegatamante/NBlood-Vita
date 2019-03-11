@@ -142,15 +142,20 @@ void credReset(void)
     DoUnFade(1);
 }
 
-int credKOpen4Load(const char *&pzFile)
+int credKOpen4Load(char *&pzFile)
 {
+	int nLen = strlen(pzFile);
+    for (int i = 0; i < nLen; i++)
+    {
+        if (pzFile[i] == '\\')
+            pzFile[i] = '/';
+    }
     int nHandle = kopen4loadfrommod(pzFile, 0);
     if (nHandle == -1)
     {
         // Hack
-        int nLen = strlen(pzFile);
-        if (nLen >= 3 && isalpha(pzFile[0]) && pzFile[1] == ':' && pzFile[2] == '\\')
-        {
+        if (nLen >= 3 && isalpha(pzFile[0]) && pzFile[1] == ':' && pzFile[2] == '/')
+		{
             pzFile += 3;
             nHandle = kopen4loadfrommod(pzFile, 0);
         }
@@ -161,7 +166,7 @@ int credKOpen4Load(const char *&pzFile)
 #define kSMKPal 5
 #define kSMKTile (MAXTILES-1)
 
-void credPlaySmk(const char *pzSMK, const char *pzWAV, int nWav)
+void credPlaySmk(const char *_pzSMK, const char *_pzWAV, int nWav)
 {
 #if 0
     CSMKPlayer smkPlayer;
@@ -176,15 +181,28 @@ void credPlaySmk(const char *pzSMK, const char *pzWAV, int nWav)
     }
     smkPlayer.sub_82E6C(pzSMK, pzWAV);
 #endif
-	if (Bstrlen(pzSMK) == 0)
+	if (Bstrlen(_pzSMK) == 0)
         return;
+    char *pzSMK = Xstrdup(_pzSMK);
+    char *pzWAV = Xstrdup(_pzWAV);
+	char *pzSMK_ = pzSMK;
+    char *pzWAV_ = pzWAV;
     int nHandleSMK = credKOpen4Load(pzSMK);
     if (nHandleSMK == -1)
+	{
+        Bfree(pzSMK_);
+        Bfree(pzWAV_);
         return;
+    }
     kclose(nHandleSMK);
     SmackerHandle hSMK = Smacker_Open(pzSMK);
     if (!hSMK.isValid)
+    {
+        Bfree(pzSMK_);
+        Bfree(pzWAV_);
         return;
+        return;
+    }
     uint32_t nWidth, nHeight;
     Smacker_GetFrameSize(hSMK, nWidth, nHeight);
     uint8_t palette[768];
@@ -195,6 +213,8 @@ void credPlaySmk(const char *pzSMK, const char *pzWAV, int nWav)
     if (!pFrame)
     {
         Smacker_Close(hSMK);
+        Bfree(pzSMK_);
+        Bfree(pzWAV_);
         return;
     }
     int nFrameRate = Smacker_GetFrameRate(hSMK);
@@ -260,4 +280,6 @@ void credPlaySmk(const char *pzSMK, const char *pzWAV, int nWav)
     FX_StopAllSounds();
     videoSetPalette(gBrightness >> 2, 0, 8+2);
     Bfree(pFrame);
+    Bfree(pzSMK_);
+    Bfree(pzWAV_);
 }

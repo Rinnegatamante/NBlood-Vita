@@ -2895,7 +2895,7 @@ void actKillDude(int a1, spritetype *pSprite, DAMAGE_TYPE a3, int a4)
         else if (nSeq == 14)
             seqSpawn(dudeInfo[nType].seqStartID+nSeq, 3, nXSprite, -1);
         else if (nSeq == 3)
-            seqSpawn(dudeInfo[nType].seqStartID+nSeq, 3, nXSprite, nDudeToGibClient2);
+            seqSpawn(dudeInfo[nType].seqStartID+13, 3, nXSprite, nDudeToGibClient2);
         else
             seqSpawn(dudeInfo[nType].seqStartID+nSeq, 3, nXSprite, nDudeToGibClient1);
         break;
@@ -3447,7 +3447,6 @@ void actImpactMissile(spritetype *pMissile, int a2)
     case 317:
         sfxKill3DSound(pMissile, -1, -1);
         sfxPlay3DSound(pMissile->x, pMissile->y, pMissile->z, 306, pMissile->sectnum);
-        GibSprite(pMissile, GIBTYPE_6, NULL, NULL);
         if (a2 == 3 && pSpriteHit && (pThingInfo || pDudeInfo))
         {
             if (pDudeInfo)
@@ -4925,7 +4924,7 @@ void actProcessSprites(void)
                             PLAYER *pPlayer2 = NULL;
                             if (IsPlayerSprite(pSprite2))
                                 pPlayer2 = &gPlayer[pSprite2->type-kDudePlayer1];
-                            if (nSprite2 == nOwner || pSprite2->picnum == 205 || pSprite2->picnum == 220 || pSprite2->picnum == 219)
+                            if (nSprite2 == nOwner || pSprite2->type == 205 || pSprite2->type == 220 || pSprite2->type == 219)
                                 continue;
                             if (gGameOptions.nGameType == 3 && pPlayer2 && pPlayer->at2ea == pPlayer2->at2ea)
                                 continue;
@@ -4948,7 +4947,7 @@ void actProcessSprites(void)
                                     continue;
                             }
                             if (pSprite->owner == -1)
-                                actPropagateSpriteOwner(pSprite2, pSprite);
+                                actPropagateSpriteOwner(pSprite, pSprite2);
                             trTriggerSprite(nSprite, pXSprite, 35);
                         }
                     }
@@ -5619,8 +5618,8 @@ spritetype* actFireMissile(spritetype *pSprite, int a2, int a3, int a4, int a5, 
         }
         else
         {
-            x = gHitInfo.hitx-mulscale30(pMissileInfo->atd<<1, Cos(pSprite->ang));
-            y = gHitInfo.hity-mulscale30(pMissileInfo->atd<<1, Sin(pSprite->ang));
+            x = gHitInfo.hitx-mulscale28(pMissileInfo->atd<<1, Cos(pSprite->ang));
+            y = gHitInfo.hity-mulscale28(pMissileInfo->atd<<1, Sin(pSprite->ang));
         }
     }
     spritetype *pMissile = actSpawnSprite(pSprite->sectnum, x, y, z, 5, 1);

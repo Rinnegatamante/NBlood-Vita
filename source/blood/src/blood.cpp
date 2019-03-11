@@ -568,7 +568,7 @@ void StartLevel(GAMEOPTIONS *gameOptions)
         }
     }
     bVanilla = gDemo.at1 && gDemo.m_bLegacy;
-    blooddemohack = bVanilla;
+    blooddemohack = 1;//bVanilla;
     memset(xsprite,0,sizeof(xsprite));
     memset(sprite,0,kMaxSprites*sizeof(spritetype));
     drawLoadingScreen();
@@ -1198,7 +1198,7 @@ void ParseOptions(void)
         case 13:
             if (OptArgc < 1)
                 ThrowError("Missing argument");
-            sub_269D8(OptArgv[0]);
+            levelOverrideINI(OptArgv[0]);
             bNoDemo = 1;
             break;
         case 26:
@@ -1447,6 +1447,8 @@ int app_main(int argc, char const * const * argv)
 
     if (Bstrcmp(SetupFilename, SETUPFILENAME))
         initprintf("Using config file \"%s\".\n", SetupFilename);
+	
+	ScanINIFiles();
 
 #ifdef STARTUP_SETUP_WINDOW
     if (readSetup < 0 || (!gNoSetup && (configversion != BYTEVERSION || gSetup.forcesetup)) || gCommandSetup)
@@ -1461,8 +1463,8 @@ int app_main(int argc, char const * const * argv)
 
     G_LoadGroups(!bNoAutoLoad && !gSetup.noautoload);
 
-    if (!g_useCwd)
-        G_CleanupSearchPaths();
+    //if (!g_useCwd)
+    //    G_CleanupSearchPaths();
 
     initprintf("Initializing OSD...\n");
 
@@ -1530,6 +1532,8 @@ int app_main(int argc, char const * const * argv)
             ThrowError("TILES###.ART files not found");
     }
 
+	LoadExtraArts();
+	
     levelLoadDefaults();
     const char *defsfile = G_DefFile();
     uint32_t stime = timerGetTicks();
@@ -2260,6 +2264,83 @@ static int parsedefinitions_game(scriptfile *pScript, int firstPass)
     return 0;
 }
 
+INICHAIN *pINIChain;
+INICHAIN const*pINISelected;
+int nINICount = 0;
+
+const char *pzCrypticArts[] = {
+    "CPART07.AR_", "CPART15.AR_"
+};
+
+INIDESCRIPTION gINIDescription[] = {
+    { "BLOOD: One Unit Whole Blood", "BLOOD.INI", NULL },
+    { "Cryptic passage", "CRYPTIC.INI", pzCrypticArts, ARRAY_SSIZE(pzCrypticArts) },
+};
+
+bool AddINIFile(const char *pzFile)
+{
+    char *pzFN;
+    struct Bstat st;
+    if (findfrompath(pzFile, &pzFN)) return false; // failed to resolve the filename
+    if (Bstat(pzFN, &st))
+    {
+        Bfree(pzFN);
+        return false;
+    } // failed to stat the file
+    Bfree(pzFN);
+    static INICHAIN *pINIIter = NULL;
+    IniFile *pTempIni = new IniFile(pzFile);
+    if (!pTempIni->FindSection("Episode1"))
+    {
+        delete pTempIni;
+        return false;
+    }
+    delete pTempIni;
+    if (!pINIChain)
+        pINIIter = pINIChain = new INICHAIN;
+    else
+        pINIIter = pINIIter->pNext = new INICHAIN;
+    pINIIter->pNext = NULL;
+    pINIIter->pDescription = NULL;
+    Bstrncpy(pINIIter->zName, pzFile, BMAX_PATH);
+    for (int i = 0; i < ARRAY_SSIZE(gINIDescription); i++)
+    {
+        if (!Bstrncasecmp(pINIIter->zName, gINIDescription[i].pzFilename, BMAX_PATH))
+        {
+            pINIIter->pDescription = &gINIDescription[i];
+            break;
+        }
+    }
+    return true;
+}
+
+void ScanINIFiles(void)
+{
+    nINICount = 0;
+    CACHE1D_FIND_REC *pINIList = klistpath("/", "*.ini", CACHE1D_FIND_FILE);
+    pINIChain = NULL;
+
+    if (bINIOverride)
+    {
+        AddINIFile(BloodIniFile);
+    }
+
+    for (auto pIter = pINIList; pIter; pIter = pIter->next)
+    {
+        AddINIFile(pIter->name);
+    }
+    klistfree(pINIList);
+    pINISelected = pINIChain;
+    for (auto pIter = pINIChain; pIter; pIter = pIter->pNext)
+    {
+        if (!Bstrncasecmp(BloodIniFile, pIter->zName, BMAX_PATH))
+        {
+            pINISelected = pIter;
+            break;
+        }
+    }
+}
+
 int loaddefinitions_game(const char *fileName, int32_t firstPass)
 {
     scriptfile *pScript = scriptfile_fromfile(fileName);
@@ -2278,3 +2359,38 @@ int loaddefinitions_game(const char *fileName, int32_t firstPass)
     return 0;
 }
 
+bool LoadArtFile(const char *pzFile)
+{
+    int hFile = kopen4loadfrommod(pzFile, 0);
+    if (hFile == -1)
+    {
+        initprintf("Can't open extra art file:\"%s\"\n", pzFile);
+        return false;
+    }
+    artheader_t artheader;
+    int nStatus = artReadHeader(hFile, pzFile, &artheader);
+    if (nStatus != 0)
+    {
+        kclose(hFile);
+        initprintf("Error reading extra art file:\"%s\"\n", pzFile);
+        return false;
+    }
+    for (int i = artheader.tilestart; i <= artheader.tileend; i++)
+        tileDelete(i);
+    artReadManifest(hFile, &artheader);
+    artPreloadFile(hFile, &artheader);
+    for (int i = artheader.tilestart; i <= artheader.tileend; i++)
+        tileUpdatePicSiz(i);
+    kclose(hFile);
+    return true;
+}
+
+void LoadExtraArts(void)
+{
+    if (!pINISelected->pDescription)
+        return;
+    for (int i = 0; i < pINISelected->pDescription->nArts; i++)
+    {
+        LoadArtFile(pINISelected->pDescription->pzArts[i]);
+    }
+}

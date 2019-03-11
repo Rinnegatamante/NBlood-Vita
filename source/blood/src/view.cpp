@@ -2923,7 +2923,7 @@ void viewDrawScreen(void)
         cZ += shakeZ;
         v4c += shakeBobX;
         v48 += shakeBobY;
-        q16horiz += mulscale30(0x40000000-Cos(gView->at35e<<2), F16(30));
+        q16horiz += fix16_from_int(mulscale30(0x40000000-Cos(gView->at35e<<2), 30));
         if (gViewPos == 0)
         {
             if (gViewHBobbing)
@@ -3173,10 +3173,8 @@ RORHACK:
         }
 
         if (r_usenewaspect)
-        {
             newaspect_enable = 0;
-            renderSetAspect(viewingRange, yxAspect);
-        }
+        renderSetAspect(viewingRange, yxAspect);
         int nClipDist = gView->pSprite->clipdist<<2;
         int ve8, vec, vf0, vf4;
         GetZRange(gView->pSprite, &vf4, &vf0, &vec, &ve8, nClipDist, 0);
