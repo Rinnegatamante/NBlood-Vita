@@ -188,13 +188,13 @@ EDUKE32_GENERATE_PRAGMAS EDUKE32_SCALER_PRAGMA(32)
 #ifdef __cplusplus
 }
 template <typename T>
-static FORCE_INLINE void swap(T * const a, T * const b)
+static FORCE_INLINE void eduke_swap(T * const a, T * const b)
 {
     T const t = *a;
     *a = *b;
     *b = t;
 }
-#define swapptr swap
+#define swapptr eduke_swap
 extern "C" {
 #else
 static FORCE_INLINE void swapptr(void *a, void *b)
@@ -207,12 +207,12 @@ static FORCE_INLINE void swapptr(void *a, void *b)
 
 #ifndef pragmas_have_swaps
 #ifdef __cplusplus
-#define swapchar swap
-#define swapshort swap
-#define swaplong swap
-#define swapfloat swap
-#define swapdouble swap
-#define swap64bit swap
+#define swapchar eduke_swap
+#define swapshort eduke_swap
+#define swaplong eduke_swap
+#define swapfloat eduke_swap
+#define swapdouble eduke_swap
+#define swap64bit eduke_swap
 #else
 static FORCE_INLINE void swapchar(void *a, void *b)
 {

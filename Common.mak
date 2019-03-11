@@ -567,7 +567,7 @@ else ifeq ($(PLATFORM),WII)
     LIBDIRS += -L$(LIBOGC_LIB)
 else ifeq ($(PLATFORM),PSP2)
     COMMONFLAGS += -mfpu=neon -mcpu=cortex-a9 -g -w -ffunction-sections -fdata-sections -fpermissive
-    COMPILERFLAGS += -D__PSP2__
+    COMPILERFLAGS += -D__PSP2__ -DWANT_FMMIDI=1 -DUSE_AUDIO_RESAMPLER -DHAVE_LIBSPEEXDSP
     LINKERFLAGS += -Wl,-q
 else ifeq ($(PLATFORM),$(filter $(PLATFORM),DINGOO GCW))
     COMPILERFLAGS += -D__OPENDINGUX__

@@ -840,6 +840,9 @@ endif
 ifeq ($(MIXERTYPE),SDL)
     blood_common_midi_objs := sdlmusic.cpp oplmidi.cpp al_midi.cpp gmtimbre.cpp opl3.cpp
 endif
+ifeq ($(PLATFORM),PSP2)
+    blood_common_midi_objs += audio_decoder.cpp audio_resampler.cpp decoder_fmmidi.cpp midisequencer.cpp midisynth.cpp
+endif
 
 
 #### Shadow Warrior

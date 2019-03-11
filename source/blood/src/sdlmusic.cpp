@@ -30,6 +30,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #define NEED_SDL_MIXER
 
+#ifdef __PSP2__
+#include <vitasdk.h>
+#include "audio_decoder.h"
+#include "decoder_fmmidi.h"
+#endif
+
 #include "compat.h"
 
 #include "common_game.h"
@@ -55,11 +61,19 @@ static int8_t external_midi_restart=0;
 
 #ifdef __ANDROID__ //TODO fix
 static char const *external_midi_tempfn = APPBASENAME "-music.mid";
+#elif defined(__PSP2__)
+static char const *external_midi_tempfn = "ux0:data/NBlood/nblood-music.mid";
 #else
 static char const *external_midi_tempfn = "/tmp/" APPBASENAME "-music.mid";
 #endif
 
+#ifdef __PSP2__
+static int32_t external_midi = 1;
+#define BUFSIZE 8192  // Max dimension of audio buffer size
+#define NSAMPLES 2048 // Number of samples for output
+#else
 static int32_t external_midi = 0;
+#endif
 
 int32_t MUSIC_SoundDevice = MIDIDEVICE_NONE;
 int32_t MUSIC_ErrorCode = MUSIC_Ok;
@@ -79,6 +93,139 @@ static void setErrorMessage(const char *msg)
 {
     Bstrncpyz(errorMessage, msg, sizeof(errorMessage));
 }
+
+#ifdef __PSP2__
+// Music block struct
+struct DecodedMusic{
+	uint8_t *audiobuf;
+	uint8_t *audiobuf2;
+	uint8_t *cur_audiobuf;
+	FILE *handle;
+	bool isPlaying;
+	bool loop;
+	volatile bool pauseTrigger;
+	volatile bool closeTrigger;
+	volatile bool changeVol;
+};
+
+// Internal stuffs
+DecodedMusic *BGM = NULL;
+std::unique_ptr<AudioDecoder> audio_decoder;
+SceUID thread, Audio_Mutex, Talk_Mutex;
+volatile bool mustExit = false;
+float old_vol = 1.0;
+int32_t bgmvolume = 255;
+
+// Audio thread code
+static int bgmThread(unsigned int args, void* arg){
+	
+	// Initializing audio port
+	int ch = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_MAIN, NSAMPLES, 48000, SCE_AUDIO_OUT_MODE_STEREO);
+	sceAudioOutSetConfig(ch, -1, -1, (SceAudioOutMode)-1);
+	old_vol = bgmvolume;
+	int vol = 128 * bgmvolume;
+	int vol_stereo[] = {vol, vol};
+	sceAudioOutSetVolume(ch, (SceAudioOutChannelFlag)(SCE_AUDIO_VOLUME_FLAG_L_CH | SCE_AUDIO_VOLUME_FLAG_R_CH), vol_stereo);
+	
+	DecodedMusic* mus;
+	for (;;){
+		
+		// Waiting for an audio output request
+		sceKernelWaitSema(Audio_Mutex, 1, NULL);
+		
+		// Fetching track
+		mus = BGM;
+		
+		// Checking if a new track is available
+		if (mus == NULL){
+			
+			//If we enter here, we probably are in the exiting procedure
+			if (mustExit){
+				sceAudioOutReleasePort(ch);
+				mustExit = false;
+				sceKernelExitThread(0);
+			}
+		
+		}
+		
+		// Initializing audio decoder
+		audio_decoder = AudioDecoder::Create(mus->handle, "Track");
+		audio_decoder->Open(mus->handle);
+		audio_decoder->SetLooping(mus->loop);
+		audio_decoder->SetFormat(48000, AudioDecoder::Format::S16, 2);
+		
+		// Initializing audio buffers
+		mus->audiobuf = (uint8_t*)malloc(BUFSIZE);
+		mus->audiobuf2 = (uint8_t*)malloc(BUFSIZE);
+		mus->cur_audiobuf = mus->audiobuf;
+		
+		// Audio playback loop
+		for (;;){
+		
+			// Check if the music must be paused
+			if (mus->pauseTrigger || mustExit){
+			
+				// Check if the music must be closed
+				if (mus->closeTrigger){
+					free(mus->audiobuf);
+					free(mus->audiobuf2);
+					audio_decoder.reset();
+					free(mus);
+					BGM = NULL;
+					if (!mustExit){
+						sceKernelSignalSema(Talk_Mutex, 1);
+						break;
+					}
+				}
+				
+				// Check if the thread must be closed
+				if (mustExit){
+				
+					// Check if the audio stream has already been closed
+					if (mus != NULL){
+						mus->closeTrigger = true;
+						continue;
+					}
+					
+					// Recursively closing all the threads
+					sceAudioOutReleasePort(ch);
+					mustExit = false;
+					sceKernelExitDeleteThread(0);
+					
+				}
+			
+				mus->isPlaying = !mus->isPlaying;
+				mus->pauseTrigger = false;
+			}
+			
+			// Check if a volume change is required
+			if (mus->changeVol){
+				old_vol = bgmvolume;
+				int vol = 128 * bgmvolume;
+				int vol_stereo[] = {vol, vol};
+				sceAudioOutSetVolume(ch, (SceAudioOutChannelFlag)(SCE_AUDIO_VOLUME_FLAG_L_CH | SCE_AUDIO_VOLUME_FLAG_R_CH), vol_stereo);
+				mus->changeVol = false;
+			}
+			
+			if (mus->isPlaying){
+				
+				// Check if audio playback finished
+				if ((!mus->loop) && audio_decoder->IsFinished()) mus->isPlaying = false;
+				
+				// Update audio output
+				if (mus->cur_audiobuf == mus->audiobuf) mus->cur_audiobuf = mus->audiobuf2;
+				else mus->cur_audiobuf = mus->audiobuf;
+				audio_decoder->Decode(mus->cur_audiobuf, BUFSIZE);	
+				sceAudioOutOutput(ch, mus->cur_audiobuf);
+				
+			}
+			
+		}
+		
+	}
+	
+}
+#endif
 
 // The music functions...
 
@@ -113,6 +260,17 @@ int32_t MUSIC_Init(int32_t SoundCard, int32_t Address)
         return OPLMusic::MUSIC_InitMidi(SoundCard, &MUSIC_MidiFunctions, Address);
     }
 #ifdef __ANDROID__
+    music_initialized = 1;
+    return MUSIC_Ok;
+#endif
+#ifdef __PSP2__
+    // Creating audio mutex
+    Audio_Mutex = sceKernelCreateSema("Audio Mutex", 0, 0, 1, NULL);
+    Talk_Mutex = sceKernelCreateSema("Talk Mutex", 0, 0, 1, NULL);
+	
+    // Creating audio thread
+    thread = sceKernelCreateThread("Audio Thread", &bgmThread, 0x10000100, 0x10000, 0, 0, NULL);
+    sceKernelStartThread(thread, sizeof(thread), &thread);
     music_initialized = 1;
     return MUSIC_Ok;
 #endif
@@ -273,6 +431,15 @@ int32_t MUSIC_Shutdown(void)
     music_initialized = 0;
     music_loopflag = MUSIC_PlayOnce;
 
+#ifdef __PSP2__
+    mustExit = true;
+    sceKernelSignalSema(Audio_Mutex, 1);
+    sceKernelWaitThreadEnd(thread, NULL, NULL);
+    sceKernelDeleteSema(Audio_Mutex);
+    sceKernelDeleteSema(Talk_Mutex);
+    sceKernelDeleteThread(thread);
+#endif		
+	
     return MUSIC_Ok;
 } // MUSIC_Shutdown
 
@@ -297,33 +464,51 @@ void MUSIC_SetVolume(int32_t volume)
     volume = max((int32_t)0, volume);
     volume = min(volume, (long int)255);
 
+#ifdef __PSP2__
+    bgmvolume = volume;
+    if (BGM != NULL){
+        BGM->changeVol = true;
+    }
+#else
     Mix_VolumeMusic(volume >> 1);  // convert 0-255 to 0-128.
+#endif
 } // MUSIC_SetVolume
 
 
 int32_t MUSIC_GetVolume(void)
 {
+#ifdef __PSP2__
+	return (bgmvolume);
+#else
     if (MUSIC_SoundDevice == MIDIDEVICE_OPL)
     {
         return OPLMusic::MIDI_GetVolume();
     }
     return (Mix_VolumeMusic(-1) << 1);  // convert 0-128 to 0-255.
+#endif
 } // MUSIC_GetVolume
 
 
 void MUSIC_SetLoopFlag(int32_t loopflag)
 {
+#ifdef __PSP2__
+    if (BGM != NULL){ BGM->loop = (loopflag > 1); }
+#else
     if (MUSIC_SoundDevice == MIDIDEVICE_OPL)
     {
         OPLMusic::MIDI_SetLoopFlag(loopflag);
         return;
     }
     music_loopflag = loopflag;
+#endif
 } // MUSIC_SetLoopFlag
 
 
 void MUSIC_Continue(void)
 {
+#ifdef __PSP2__
+    if (BGM != NULL) BGM->pauseTrigger = true;
+#else
     if (MUSIC_SoundDevice == MIDIDEVICE_OPL)
     {
         OPLMusic::MIDI_ContinueSong();
@@ -331,21 +516,37 @@ void MUSIC_Continue(void)
     }
     if (Mix_PausedMusic())
         Mix_ResumeMusic();
+#endif
 } // MUSIC_Continue
 
 
 void MUSIC_Pause(void)
 {
+#ifdef __PSP2__
+    if (BGM != NULL) BGM->pauseTrigger = true;
+#else
     if (MUSIC_SoundDevice == MIDIDEVICE_OPL)
     {
         OPLMusic::MIDI_PauseSong();
         return;
     }
     Mix_PauseMusic();
+#endif
 } // MUSIC_Pause
 
 int32_t MUSIC_StopSong(void)
 {
+#ifdef __PSP2__
+    if (BGM != NULL){
+        BGM->closeTrigger = true;
+        BGM->pauseTrigger = true;
+        sceKernelWaitSema(Talk_Mutex, 1, NULL);
+    }
+
+    music_musicchunk = NULL;
+
+    return(MUSIC_Ok);
+#endif
     if (MUSIC_SoundDevice == MIDIDEVICE_OPL)
     {
         OPLMusic::MIDI_StopSong();
@@ -461,6 +662,35 @@ static void sigchld_handler(int signo)
 // void MUSIC_PlayMusic(char *_filename)
 int32_t MUSIC_PlaySong(char *song, int32_t songsize, int32_t loopflag)
 {
+#ifdef __PSP2__
+    MUSIC_StopSong();
+
+    if (external_midi)
+    {
+        FILE *fp;
+
+        fp = Bfopen(external_midi_tempfn, "wb");
+        if (fp)
+        {
+            fwrite(song, 1, songsize, fp);
+            Bfclose(fp);
+        }
+        else initprintf("%s: fopen: %s\n", __func__, strerror(errno));
+    }
+	
+	FILE *fd = fopen(external_midi_tempfn, "rb");
+	if (fd) {
+        DecodedMusic* memblock = (DecodedMusic*)malloc(sizeof(DecodedMusic));
+        memblock->handle = fd;
+        memblock->pauseTrigger = false;
+        memblock->closeTrigger = false;
+        memblock->isPlaying = true;
+        memblock->loop = loopflag;
+        BGM = memblock;
+        sceKernelSignalSema(Audio_Mutex, 1);
+	} else initprintf("%s: fopen: %s\n", __func__, strerror(errno));
+	return MUSIC_Ok;
+#endif
     if (MUSIC_SoundDevice == MIDIDEVICE_OPL)
     {
         MUSIC_SetErrorCode(MUSIC_Ok)
