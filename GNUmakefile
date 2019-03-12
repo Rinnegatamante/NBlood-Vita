@@ -1186,10 +1186,6 @@ $(engine_obj)/a-c.$o: $(engine_src)/a-c.cpp | $(engine_obj)
 	$(COMPILE_STATUS)
 	$(RECIPE_IF) $(subst -O$(OPTLEVEL),-O2,$(subst $(ASAN_FLAGS),,$(COMPILER_CXX))) $(engine_cflags) -c $< -o $@ $(RECIPE_RESULT_COMPILE)
 
-$(engine_obj)/kplib.$o: $(engine_src)/kplib.cpp | $(engine_obj)
-	$(COMPILE_STATUS)
-	$(RECIPE_IF) $(subst -O$(OPTLEVEL),-O0,$(subst $(ASAN_FLAGS),,$(COMPILER_CXX))) $(engine_cflags) -c $< -o $@ $(RECIPE_RESULT_COMPILE)	
-
 $(engine_obj)/rev.$o: $(engine_src)/rev.cpp | $(engine_obj)
 	$(COMPILE_STATUS)
 	$(RECIPE_IF) $(COMPILER_CXX) $(engine_cflags) $(REVFLAG) -c $< -o $@ $(RECIPE_RESULT_COMPILE)

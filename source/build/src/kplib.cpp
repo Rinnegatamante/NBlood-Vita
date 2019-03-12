@@ -2674,8 +2674,8 @@ static HANDLE hfind = INVALID_HANDLE_VALUE;
 static WIN32_FIND_DATA findata;
 #elif defined(__PSP2__)
 #define MAX_PATH 260
-static SceUID hfind = NULL;
-static SceIoDirent *findata = NULL;
+static SceUID hfind = -1;
+static SceIoDirent findata;
 #else
 #define MAX_PATH 260
 static DIR *hfind = NULL;
@@ -2698,7 +2698,7 @@ void kzfindfilestart(const char *st)
     if (hfind != INVALID_HANDLE_VALUE)
         { FindClose(hfind); hfind = INVALID_HANDLE_VALUE; }
 #elif defined(__PSP2__)
-	if (hfind) { sceIoDclose(hfind); hfind = NULL; }
+	if (hfind >= 0) { sceIoDclose(hfind); hfind = -1; }
 #else
     if (hfind) { closedir(hfind); hfind = NULL; }
 #endif
@@ -2738,7 +2738,7 @@ int32_t kzfindfile(char *filnam)
             strcpy(&filnam[i],findata.cFileName);
             if (findata.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) strcat(&filnam[i],"\\");
 #elif defined(__PSP2__)
-            if (!hfind)
+            if (hfind < 0)
             {
                 char const *s = "ux0:data/EDuke32";
                 if (wildstpathleng > 0)
@@ -2783,20 +2783,20 @@ int32_t kzfindfile(char *filnam)
             strcpy(&filnam[i],findata.cFileName);
             if (findata.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) strcat(&filnam[i],"\\");
 #elif defined(__PSP2__)
-			if (sceIoDread(hfind, findata) <= 0)
-                { sceIoDclose(hfind); hfind = NULL; if (!kzhashbuf) return 0; srchstat = 2; break; }
+			if (sceIoDread(hfind, &findata) <= 0)
+                { sceIoDclose(hfind); hfind = -1; if (!kzhashbuf) return 0; srchstat = 2; break; }
             i = wildstpathleng;
-            if (S_ISDIR(findata->d_stat.st_mode))
-                { if (findata->d_name[0] == '.' && !findata->d_name[1]) continue; } //skip .
-            else if (S_ISREG(findata->d_stat.st_mode) || S_ISLNK(findata->d_stat.st_mode))
-                { if (findata->d_name[0] == '.') continue; } //skip hidden (dot) files
+            if (S_ISDIR(findata.d_stat.st_mode))
+                { if (findata.d_name[0] == '.' && !findata.d_name[1]) continue; } //skip .
+            else if (S_ISREG(findata.d_stat.st_mode) || S_ISLNK(findata.d_stat.st_mode))
+                { if (findata.d_name[0] == '.') continue; } //skip hidden (dot) files
             else continue; //skip devices and fifos and such
-            if (!wildmatch(findata->d_name,&newildst[wildstpathleng])) continue;
-            strcpy(&filnam[i],findata->d_name);
-            if (S_ISDIR(findata->d_stat.st_mode)) strcat(&filnam[i],"/");
+            if (!wildmatch(findata.d_name,&newildst[wildstpathleng])) continue;
+            strcpy(&filnam[i],findata.d_name);
+            if (S_ISDIR(findata.d_stat.st_mode)) strcat(&filnam[i],"/");
 #else
             if ((findata = readdir(hfind)) == NULL)
-                { closedir(hfind); hfind = NULL; if (!kzhashbuf) return 0; srchstat = 2; break; }
+                { closedir(hfind); hfind = -1; if (!kzhashbuf) return 0; srchstat = 2; break; }
             i = wildstpathleng;
             if (findata->d_type == DT_DIR)
                 { if (findata->d_name[0] == '.' && !findata->d_name[1]) continue; } //skip .
