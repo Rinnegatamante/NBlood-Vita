@@ -887,8 +887,12 @@ void debugprintf(const char *f, ...)
 //
 
 // static int32_t joyblast=0;
+#ifdef __PSP2__
+// need this to be non-static, to use it in vita_handle_analog_sticks() in sdlayer12.cpp
+SDL_Joystick *joydev = NULL;
+#else
 static SDL_Joystick *joydev = NULL;
-
+#endif
 //
 // initinput() -- init input system
 //
@@ -948,7 +952,12 @@ int32_t initinput(void)
             inputdevices |= 4;
 
             // KEEPINSYNC duke3d/src/gamedefs.h, mact/include/_control.h
+#ifdef __PSP2__
+            // analogs are turned into fake buttons in vita_handle_analog_sticks
+            joystick.numAxes = 0;
+#else
             joystick.numAxes = min(9, (int)SDL_JoystickNumAxes(joydev));
+#endif
             joystick.numButtons = min(32, (int)SDL_JoystickNumButtons(joydev));
             joystick.numHats = min((36-joystick.numButtons)/4,(long int)SDL_JoystickNumHats(joydev));
             initprintf("Joystick 1 has %d axes, %d buttons, and %d hat(s).\n", joystick.numAxes, joystick.numButtons, joystick.numHats);

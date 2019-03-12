@@ -19,28 +19,48 @@ enum {
     VITA_PAD_RIGHT      = 9,
     VITA_PAD_SELECT     = 10,
     VITA_PAD_START      = 11,
-    VITA_NUM_BUTTONS    = 12
+    VITA_LJOY_LEFT      = 12, // handled in vita_handle_analog_sticks()
+    VITA_LJOY_RIGHT     = 13,
+    VITA_LJOY_UP        = 14,
+    VITA_LJOY_DOWN      = 15,
+    VITA_RJOY_LEFT      = 16,
+    VITA_RJOY_RIGHT     = 17,
+    VITA_RJOY_UP        = 18,
+    VITA_RJOY_DOWN      = 19,
+    VITA_NUM_BUTTONS    = 20
 };
 
 static SDLKey map_vita_button_to_sdlk[VITA_NUM_BUTTONS] = 
 { 
-    SDLK_w,     // VITA_PAD_TRIANGLE
-    SDLK_d,    // VITA_PAD_CIRCLE
+    SDLK_w,         // VITA_PAD_TRIANGLE
+    SDLK_d,         // VITA_PAD_CIRCLE
     SDLK_RETURN,    // VITA_PAD_CROSS
-    SDLK_a,     // VITA_PAD_SQUARE
-    SDLK_q,     // VITA_PAD_L
-    SDLK_r,     // VITA_PAD_R
+    SDLK_a,         // VITA_PAD_SQUARE
+    SDLK_q,         // VITA_PAD_L
+    SDLK_r,         // VITA_PAD_R
     SDLK_DOWN,      // VITA_PAD_DOWN
     SDLK_LEFT,      // VITA_PAD_LEFT
     SDLK_UP,        // VITA_PAD_UP
     SDLK_RIGHT,     // VITA_PAD_RIGHT
-    SDLK_c,     // VITA_SELECT
-    SDLK_ESCAPE     // VITA_START
+    SDLK_c,         // VITA_SELECT
+    SDLK_ESCAPE,    // VITA_START
+    SDLK_v,         // VITA_LJOY_LEFT
+    SDLK_n,         // VITA_LJOY_RIGHT
+    SDLK_KP8,       // VITA_LJOY_UP
+    SDLK_KP2,       // VITA_LJOY_DOWN
+    SDLK_KP4,       // VITA_RJOY_LEFT
+    SDLK_KP6,       // VITA_RJOY_RIGHT
+    SDLK_KP7,       // VITA_RJOY_UP
+    SDLK_KP1        // VITA_RJOY_DOWN 
 };
 #include "osd.h"
 extern osdmain_t *osd;
+static int pressed_buttons[VITA_NUM_BUTTONS] = { 0 };
+extern SDL_Joystick *joydev;
 void vita_button_to_sdlkey_event(int vita_button, SDL_Event *event, uint32_t event_type);
 void vita_preprocess_event(SDL_Event *event);
+void vita_create_and_push_sdlkey_event(uint32_t event_type, SDLKey key);
+void vita_handle_analog_sticks(void);
 #endif
 
 #ifdef _WIN32
@@ -525,6 +545,16 @@ void vita_button_to_sdlkey_event(int vita_button, SDL_Event *event, uint32_t eve
     event->key.keysym.mod = 0;
 }
 
+void vita_create_and_push_sdlkey_event(uint32_t event_type, SDLKey key) 
+{
+    SDL_Event event;
+    event.type = event.key.type = event_type;
+    event.key.keysym.sym = key;
+    event.key.keysym.unicode = event.key.keysym.sym;
+    event.key.keysym.mod = 0;
+    SDL_PushEvent(&event);
+}
+
 void vita_preprocess_event(SDL_Event *event) 
 {
     switch (event->type) {
@@ -542,6 +572,165 @@ void vita_preprocess_event(SDL_Event *event)
             break;
     }
 }
+
+void vita_handle_analog_sticks(void)
+{
+    // joystick must be open to handle it here
+    if (!joydev) return;
+    int up = 0;
+    int down = 0;
+    int left = 0;
+    int right = 0;
+    float x, y;
+    float joy_dead_zone_squared = 10240.0*10240.0;
+    float slope = 0.414214f; // tangent of 22.5 degrees for size of angular zones
+
+    // map left stick to run
+    x = SDL_JoystickGetAxis(joydev, 0);
+    y = -1 * SDL_JoystickGetAxis(joydev, 1);
+
+    if ((x * x + y * y) >= joy_dead_zone_squared) {
+        // upper right quadrant
+        if (y > 0 && x > 0)
+        {
+            if (y > slope * x)
+                up = 1;
+            if (x > slope * y)
+                right = 1;
+        }
+        // upper left quadrant
+        else if (y > 0 && x <= 0)
+        {
+            if (y > slope * (-x))
+                up = 1;
+            if ((-x) > slope * y)
+                left = 1;
+        }
+        // lower right quadrant
+        else if (y <= 0 && x > 0)
+        {
+            if ((-y) > slope * x)
+                down = 1;
+            if (x > slope * (-y))
+                right = 1;
+        }
+        // lower left quadrant
+        else if (y <= 0 && x <= 0)
+        {
+            if ((-y) > slope * (-x))
+                down = 1;
+            if ((-x) > slope * (-y))
+                left = 1;
+        }
+    }
+    if (!pressed_buttons[VITA_LJOY_UP] && up) {
+        vita_create_and_push_sdlkey_event(SDL_KEYDOWN, map_vita_button_to_sdlk[VITA_LJOY_UP]);
+        pressed_buttons[VITA_LJOY_UP] = 1;
+    } else if (pressed_buttons[VITA_LJOY_UP] && !up) {
+        vita_create_and_push_sdlkey_event(SDL_KEYUP, map_vita_button_to_sdlk[VITA_LJOY_UP]);
+        pressed_buttons[VITA_LJOY_UP] = 0;
+    }
+
+    if (!pressed_buttons[VITA_LJOY_DOWN] && down) {
+        vita_create_and_push_sdlkey_event(SDL_KEYDOWN, map_vita_button_to_sdlk[VITA_LJOY_DOWN]);
+        pressed_buttons[VITA_LJOY_DOWN] = 1;
+    } else if (pressed_buttons[VITA_LJOY_DOWN] && !down) {
+        vita_create_and_push_sdlkey_event(SDL_KEYUP, map_vita_button_to_sdlk[VITA_LJOY_DOWN]);
+        pressed_buttons[VITA_LJOY_DOWN] = 0;
+    }
+    
+    if (!pressed_buttons[VITA_LJOY_LEFT] && left) {
+        vita_create_and_push_sdlkey_event(SDL_KEYDOWN, map_vita_button_to_sdlk[VITA_LJOY_LEFT]);
+        pressed_buttons[VITA_LJOY_LEFT] = 1;
+    } else if (pressed_buttons[VITA_LJOY_LEFT] && !left) {
+        vita_create_and_push_sdlkey_event(SDL_KEYUP, map_vita_button_to_sdlk[VITA_LJOY_LEFT]);
+        pressed_buttons[VITA_LJOY_LEFT] = 0;
+    }
+
+    if (!pressed_buttons[VITA_LJOY_RIGHT] && right) {
+        vita_create_and_push_sdlkey_event(SDL_KEYDOWN, map_vita_button_to_sdlk[VITA_LJOY_RIGHT]);
+        pressed_buttons[VITA_LJOY_RIGHT] = 1;
+    } else if (pressed_buttons[VITA_LJOY_RIGHT] && !right) {
+        vita_create_and_push_sdlkey_event(SDL_KEYUP, map_vita_button_to_sdlk[VITA_LJOY_RIGHT]);
+        pressed_buttons[VITA_LJOY_RIGHT] = 0;
+    }
+
+    // map right stick to camera
+    x = SDL_JoystickGetAxis(joydev, 2);
+    y = -1 * SDL_JoystickGetAxis(joydev, 3);
+
+    up = 0;
+    down = 0;
+    left = 0;
+    right = 0;
+
+    if ((x * x + y * y) >= joy_dead_zone_squared) {
+
+        // upper right quadrant
+        if (y > 0 && x > 0)
+        {
+            if (y > slope * x)
+                up = 1;
+            if (x > slope * y)
+                right = 1;
+        }
+        // upper left quadrant
+        else if (y > 0 && x <= 0)
+        {
+            if (y > slope * (-x))
+                up = 1;
+            if ((-x) > slope * y)
+                left = 1;
+        }
+        // lower right quadrant
+        else if (y <= 0 && x > 0)
+        {
+            if ((-y) > slope * x)
+                down = 1;
+            if (x > slope * (-y))
+                right = 1;
+        }
+        // lower left quadrant
+        else if (y <= 0 && x <= 0)
+        {
+            if ((-y) > slope * (-x))
+                down = 1;
+            if ((-x) > slope * (-y))
+                left = 1;
+        }
+    }
+    if (!pressed_buttons[VITA_RJOY_UP] && up) {
+        vita_create_and_push_sdlkey_event(SDL_KEYDOWN, map_vita_button_to_sdlk[VITA_RJOY_UP]);
+        pressed_buttons[VITA_RJOY_UP] = 1;
+    } else if (pressed_buttons[VITA_RJOY_UP] && !up) {
+        vita_create_and_push_sdlkey_event(SDL_KEYUP, map_vita_button_to_sdlk[VITA_RJOY_UP]);
+        pressed_buttons[VITA_RJOY_UP] = 0;
+    }
+
+    if (!pressed_buttons[VITA_RJOY_DOWN] && down) {
+        vita_create_and_push_sdlkey_event(SDL_KEYDOWN, map_vita_button_to_sdlk[VITA_RJOY_DOWN]);
+        pressed_buttons[VITA_RJOY_DOWN] = 1;
+    } else if (pressed_buttons[VITA_RJOY_DOWN] && !down) {
+        vita_create_and_push_sdlkey_event(SDL_KEYUP, map_vita_button_to_sdlk[VITA_RJOY_DOWN]);
+        pressed_buttons[VITA_RJOY_DOWN] = 0;
+    }
+    
+    if (!pressed_buttons[VITA_RJOY_LEFT] && left) {
+        vita_create_and_push_sdlkey_event(SDL_KEYDOWN, map_vita_button_to_sdlk[VITA_RJOY_LEFT]);
+        pressed_buttons[VITA_RJOY_LEFT] = 1;
+    } else if (pressed_buttons[VITA_RJOY_LEFT] && !left) {
+        vita_create_and_push_sdlkey_event(SDL_KEYUP, map_vita_button_to_sdlk[VITA_RJOY_LEFT]);
+        pressed_buttons[VITA_RJOY_LEFT] = 0;
+    }
+
+    if (!pressed_buttons[VITA_RJOY_RIGHT] && right) {
+        vita_create_and_push_sdlkey_event(SDL_KEYDOWN, map_vita_button_to_sdlk[VITA_RJOY_RIGHT]);
+        pressed_buttons[VITA_RJOY_RIGHT] = 1;
+    } else if (pressed_buttons[VITA_RJOY_RIGHT] && !right) {
+        vita_create_and_push_sdlkey_event(SDL_KEYUP, map_vita_button_to_sdlk[VITA_RJOY_RIGHT]);
+        pressed_buttons[VITA_RJOY_RIGHT] = 0;
+    }
+}
 #endif
 
 // SDL 1.2 specific event handling
@@ -549,6 +738,10 @@ int32_t handleevents_pollsdl(void)
 {
     int32_t code, rv = 0, j;
     SDL_Event ev;
+
+#ifdef __PSP2__
+    vita_handle_analog_sticks();
+#endif
 
     while (SDL_PollEvent(&ev))
     {
