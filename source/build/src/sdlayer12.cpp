@@ -2,6 +2,47 @@
 
 #include <SDL/SDL_events.h>
 
+#ifdef __PSP2__
+
+#define NO_MAPPING -1
+
+enum {
+    VITA_PAD_TRIANGLE   = 0,
+    VITA_PAD_CIRCLE     = 1,
+    VITA_PAD_CROSS      = 2,
+    VITA_PAD_SQUARE     = 3,
+    VITA_PAD_L          = 4,
+    VITA_PAD_R          = 5,
+    VITA_PAD_DOWN       = 6,
+    VITA_PAD_LEFT       = 7,
+    VITA_PAD_UP         = 8,
+    VITA_PAD_RIGHT      = 9,
+    VITA_PAD_SELECT     = 10,
+    VITA_PAD_START      = 11,
+    VITA_NUM_BUTTONS    = 12
+};
+
+static SDLKey map_vita_button_to_sdlk[VITA_NUM_BUTTONS] = 
+{ 
+    SDLK_w,     // VITA_PAD_TRIANGLE
+    SDLK_d,    // VITA_PAD_CIRCLE
+    SDLK_RETURN,    // VITA_PAD_CROSS
+    SDLK_a,     // VITA_PAD_SQUARE
+    SDLK_q,     // VITA_PAD_L
+    SDLK_r,     // VITA_PAD_R
+    SDLK_DOWN,      // VITA_PAD_DOWN
+    SDLK_LEFT,      // VITA_PAD_LEFT
+    SDLK_UP,        // VITA_PAD_UP
+    SDLK_RIGHT,     // VITA_PAD_RIGHT
+    SDLK_c,     // VITA_SELECT
+    SDLK_ESCAPE     // VITA_START
+};
+#include "osd.h"
+extern osdmain_t *osd;
+void vita_button_to_sdlkey_event(int vita_button, SDL_Event *event, uint32_t event_type);
+void vita_preprocess_event(SDL_Event *event);
+#endif
+
 #ifdef _WIN32
 HWND win_gethwnd(void)
 {
@@ -475,6 +516,33 @@ void videoShowFrame(int32_t w)
 #endif
 }
 
+#ifdef __PSP2__
+void vita_button_to_sdlkey_event(int vita_button, SDL_Event *event, uint32_t event_type) 
+{
+    event->type = event->key.type = event_type;
+    event->key.keysym.sym = map_vita_button_to_sdlk[vita_button];
+    event->key.keysym.unicode = event->key.keysym.sym;
+    event->key.keysym.mod = 0;
+}
+
+void vita_preprocess_event(SDL_Event *event) 
+{
+    switch (event->type) {
+        case SDL_JOYBUTTONDOWN:
+            if (event->jbutton.which==0) { // Only Joystick 0 controls the game
+				vita_button_to_sdlkey_event(event->jbutton.button, event, SDL_KEYDOWN);
+            }
+            break;
+        case SDL_JOYBUTTONUP:
+            if (event->jbutton.which==0) {// Only Joystick 0 controls the game
+                vita_button_to_sdlkey_event(event->jbutton.button, event, SDL_KEYUP);
+            }
+            break;
+        default:
+            break;
+    }
+}
+#endif
 
 // SDL 1.2 specific event handling
 int32_t handleevents_pollsdl(void)
@@ -484,6 +552,9 @@ int32_t handleevents_pollsdl(void)
 
     while (SDL_PollEvent(&ev))
     {
+#ifdef __PSP2__
+        vita_preprocess_event(&ev);
+#endif
         switch (ev.type)
         {
             case SDL_KEYDOWN:
