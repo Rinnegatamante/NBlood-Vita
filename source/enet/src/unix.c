@@ -113,13 +113,14 @@ enet_deinitialize (void)
 #endif
 }
 
-// Why, Xcode? Why?
-time_t time(time_t *);
-
 enet_uint32
 enet_host_random_seed (void)
 {
-    return (enet_uint32) time (NULL);
+    struct timeval timeVal;
+    
+    gettimeofday (& timeVal, NULL);
+    
+    return (timeVal.tv_sec * 1000) ^ (timeVal.tv_usec / 1000);
 }
 
 enet_uint32
@@ -296,13 +297,18 @@ int
 enet_socket_set_option (ENetSocket socket, ENetSocketOption option, int value)
 {
     int result = -1;
+	int _true = 1;
     switch (option)
     {
         case ENET_SOCKOPT_NONBLOCK:
+#ifndef __PSP2__
 #ifdef HAS_FCNTL
             result = fcntl (socket, F_SETFL, (value ? O_NONBLOCK : 0) | (fcntl (socket, F_GETFL) & ~O_NONBLOCK));
 #else
             result = ioctl (socket, FIONBIO, & value);
+#endif
+#else
+            result = setsockopt (socket, SOL_SOCKET, SCE_NET_SO_NBIO, (char * ) & _true, sizeof(int));
 #endif
             break;
 
