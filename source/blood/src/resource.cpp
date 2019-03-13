@@ -635,3 +635,16 @@ void Resource::FNAddFiles(fnlist_t * fnlist, const char *pattern)
         }
     }
 }
+
+void Resource::PrecacheSounds(void)
+{
+    for (unsigned int i = 0; i < count; i++)
+    {
+        DICTNODE *pNode = &dict[i];
+        if ((!strcmp(pNode->type, "RAW") || !strcmp(pNode->type, "SFX")) && !pNode->ptr)
+        {
+            Load(pNode);
+			G_HandleAsync();
+        }
+    }
+}
