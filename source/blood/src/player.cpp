@@ -48,6 +48,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "view.h"
 #include "warp.h"
 #include "weapon.h"
+#include "common_game.h"
 
 PROFILE gProfile[kMaxPlayers];
 
@@ -619,7 +620,7 @@ void playerSetRace(PLAYER *pPlayer, int nLifeMode)
     *pDudeInfo = gPlayerTemplate[nLifeMode];
     pPlayer->at5f = nLifeMode;
     for (int i = 0; i < 7; i++)
-        pDudeInfo->at70[i] = mulscale8(Handicap[gProfile[pPlayer->at57].skill], pDudeInfo->at54[i]);
+        pDudeInfo->at70[i] = mulscale8(Handicap[gProfile[pPlayer->at57].skill], pDudeInfo->startDamage[i]);
 }
 
 void playerSetGodMode(PLAYER *pPlayer, char bGodMode)
@@ -647,14 +648,40 @@ void playerResetInertia(PLAYER *pPlayer)
 
 void playerStart(int nPlayer)
 {
-    PLAYER *pPlayer = &gPlayer[nPlayer];
-    GINPUT *pInput = &pPlayer->atc;
-    int nStartZone;
-    if (gGameOptions.nGameType >= 2)
-        nStartZone = Random(8);
-    else
-        nStartZone = nPlayer;
-    ZONE *pStartZone = &gStartZone[nStartZone];
+    PLAYER* pPlayer = &gPlayer[nPlayer];
+    GINPUT* pInput = &pPlayer->atc;
+    ZONE* pStartZone = NULL;
+
+    // normal start position
+    if (gGameOptions.nGameType <= 1)
+        pStartZone = &gStartZone[nPlayer];
+    
+    // By NoOne: let's check if there is positions of teams is specified
+    // if no, pick position randomly, just like it works in vanilla.
+    else if (gGameOptions.nGameType == 3 && gTeamsSpawnUsed == true) {
+        int maxRetries = 5;
+        while (maxRetries-- > 0) {
+            if (pPlayer->at2ea == 0) pStartZone = &gStartZoneTeam1[Random(3)];
+            else pStartZone = &gStartZoneTeam2[Random(3)];
+
+            if (maxRetries != 0) {
+                // check if there is no spawned player in selected zone
+                for (int i = headspritesect[pStartZone->sectnum]; i >= 0; i = nextspritesect[i]) {
+                    spritetype* pSprite = &sprite[i];
+                    if (pStartZone->x == pSprite->x && pStartZone->y == pSprite->y && IsPlayerSprite(pSprite)) {
+                        pStartZone = NULL;
+                        break;
+                    }
+                }
+            }
+
+            if (pStartZone != NULL)
+                break;
+        }
+    } else {
+        pStartZone = &gStartZone[Random(8)];
+    }
+
     spritetype *pSprite = actSpawnSprite(pStartZone->sectnum, pStartZone->x, pStartZone->y, pStartZone->z, 6, 1);
     dassert(pSprite->extra > 0 && pSprite->extra < kMaxXSprites);
     XSPRITE *pXSprite = &xsprite[pSprite->extra];
@@ -674,11 +701,11 @@ void playerStart(int nPlayer)
     pPlayer->angold = pSprite->ang = pStartZone->ang;
     pPlayer->q16ang = fix16_from_int(pSprite->ang);
     pSprite->type = kDudePlayer1+nPlayer;
-    pSprite->clipdist = pDudeInfo->ata;
+    pSprite->clipdist = pDudeInfo->clipdist;
     pSprite->hitag = 15;
-    pXSprite->at2c_0 = 0;
-    pXSprite->at2e_0 = -1;
-    pPlayer->pXSprite->health = pDudeInfo->at2<<4;
+    pXSprite->burnTime = 0;
+    pXSprite->burnSource = -1;
+    pPlayer->pXSprite->health = pDudeInfo->startHealth<<4;
     pPlayer->pSprite->cstat &= (unsigned short)~32768;
     pPlayer->at63 = 0;
     pPlayer->q16horiz = 0;
@@ -742,6 +769,7 @@ void playerStart(int nPlayer)
     pPlayer->atc3 = 0;
     pPlayer->at26 = -1;
     pPlayer->at376 = 0;
+    pPlayer->nWaterPal = 0;
     for (int i = 0; i < kMaxPowerUps; i++)
         pPlayer->at202[i] = 0;
     if (pPlayer == gMe)
@@ -754,7 +782,7 @@ void playerStart(int nPlayer)
     if (IsUnderwaterSector(pSprite->sectnum))
     {
         pPlayer->at2f = 1;
-        pPlayer->pXSprite->at17_6 = 1;
+        pPlayer->pXSprite->medium = 1;
     }
 }
 
@@ -844,6 +872,11 @@ char PickupItem(PLAYER *pPlayer, spritetype *pItem)
     int nType = pItem->type - 100;
     switch (pItem->type)
     {
+    //case 129:
+        //dudeInfo[31].seqStartID = 13568;
+        //if (!powerupActivate(pPlayer, nType))
+            //return 0;
+        //return 1;
     case 145:
     case 146:
         if (gGameOptions.nGameType != 3)
@@ -855,7 +888,7 @@ char PickupItem(PLAYER *pPlayer, spritetype *pItem)
             {
                 if (pPlayer->at2ea == 1)
                 {
-                    if ((pPlayer->at90&1) == 0 && pXItem->at1_6)
+                    if ((pPlayer->at90&1) == 0 && pXItem->state)
                     {
                         pPlayer->at90 |= 1;
                         pPlayer->at91[0] = pItem->index;
@@ -867,7 +900,7 @@ char PickupItem(PLAYER *pPlayer, spritetype *pItem)
                 }
                 if (pPlayer->at2ea == 0)
                 {
-                    if ((pPlayer->at90&1) != 0 && !pXItem->at1_6)
+                    if ((pPlayer->at90&1) != 0 && !pXItem->state)
                     {
                         pPlayer->at90 &= ~1;
                         pPlayer->at91[0] = -1;
@@ -876,7 +909,7 @@ char PickupItem(PLAYER *pPlayer, spritetype *pItem)
                         sndStartSample(8003, 255, 2, 0);
                         viewSetMessage(buffer);
                     }
-                    if ((pPlayer->at90&2) != 0 && pXItem->at1_6)
+                    if ((pPlayer->at90&2) != 0 && pXItem->state)
                     {
                         pPlayer->at90 &= ~2;
                         pPlayer->at91[1] = -1;
@@ -900,7 +933,7 @@ char PickupItem(PLAYER *pPlayer, spritetype *pItem)
             {
                 if (pPlayer->at2ea == 0)
                 {
-                    if((pPlayer->at90&2) == 0 && pXItem->at1_6)
+                    if((pPlayer->at90&2) == 0 && pXItem->state)
                     {
                         pPlayer->at90 |= 2;
                         pPlayer->at91[1] = pItem->index;
@@ -912,7 +945,7 @@ char PickupItem(PLAYER *pPlayer, spritetype *pItem)
                 }
                 if (pPlayer->at2ea == 1)
                 {
-                    if ((pPlayer->at90&2) != 0 && !pXItem->at1_6)
+                    if ((pPlayer->at90&2) != 0 && !pXItem->state)
                     {
                         pPlayer->at90 &= ~2;
                         pPlayer->at91[1] = -1;
@@ -921,7 +954,7 @@ char PickupItem(PLAYER *pPlayer, spritetype *pItem)
                         sndStartSample(8002, 255, 2, 0);
                         viewSetMessage(buffer);
                     }
-                    if ((pPlayer->at90&1) != 0 && pXItem->at1_6)
+                    if ((pPlayer->at90&1) != 0 && pXItem->state)
                     {
                         pPlayer->at90 &= ~1;
                         pPlayer->at91[0] = -1;
@@ -1049,8 +1082,13 @@ char PickupWeapon(PLAYER *pPlayer, spritetype *pWeapon)
         if (pWeapon->type == 50 && gGameOptions.nGameType > 1 && sub_3A158(pPlayer, NULL))
             return 0;
         pPlayer->atcb[nWeaponType] = 1;
-        if (nAmmoType != -1)
-            pPlayer->at181[nAmmoType] = ClipHigh(pPlayer->at181[nAmmoType]+pWeaponItemData->atc, gAmmoInfo[nAmmoType].at0);
+        if (nAmmoType == -1) return 0;
+        // By NoOne: allow to set custom ammo count for weapon pickups
+        if (pWeapon->extra < 0 || xsprite[pWeapon->extra].data1 <= 0)
+            pPlayer->at181[nAmmoType] = ClipHigh(pPlayer->at181[nAmmoType] + pWeaponItemData->atc, gAmmoInfo[nAmmoType].at0);
+        else
+            pPlayer->at181[nAmmoType] = ClipHigh(pPlayer->at181[nAmmoType] + xsprite[pWeapon->extra].data1, gAmmoInfo[nAmmoType].at0);
+
         int nNewWeapon = WeaponUpgrade(pPlayer, nWeaponType);
         if (nNewWeapon != pPlayer->atbd)
         {
@@ -1075,28 +1113,30 @@ void PickUp(PLAYER *pPlayer, spritetype *pSprite)
 {
     char buffer[80];
     int nType = pSprite->type;
-    char vb = 0;
-    if (nType >= 100 && nType <= 149)
-    {
-        vb = PickupItem(pPlayer, pSprite);
-        sprintf(buffer, "Picked up %s", gItemText[nType-100]);
+    char pickedUp = 0;
+    if (nType != 40 && nType != 80) { // By NoOne: no pickup for random item generators.
+        if (nType >= 100 && nType <= 149)
+        {
+            pickedUp = PickupItem(pPlayer, pSprite);
+            sprintf(buffer, "Picked up %s", gItemText[nType - 100]);
+        }
+        else if (nType >= 60 && nType < 81)
+        {
+            pickedUp = PickupAmmo(pPlayer, pSprite);
+            sprintf(buffer, "Picked up %s", gAmmoText[nType - 60]);
+        }
+        else if (nType >= 40 && nType < 51)
+        {
+            pickedUp = PickupWeapon(pPlayer, pSprite);
+            sprintf(buffer, "Picked up %s", gWeaponText[nType - 40]);
+        }
     }
-    else if (nType >= 60 && nType < 81)
-    {
-        vb = PickupAmmo(pPlayer, pSprite);
-        sprintf(buffer, "Picked up %s", gAmmoText[nType-60]);
-    }
-    else if (nType >= 40 && nType < 51)
-    {
-        vb = PickupWeapon(pPlayer, pSprite);
-        sprintf(buffer, "Picked up %s", gWeaponText[nType-40]);
-    }
-    if (vb)
+    if (pickedUp)
     {
         if (pSprite->extra > 0)
         {
             XSPRITE *pXSprite = &xsprite[pSprite->extra];
-            if (pXSprite->ate_1)
+            if (pXSprite->Pickup)
                 trTriggerSprite(pSprite->index, pXSprite, 32);
         }
         if (!actCheckRespawn(pSprite))
@@ -1171,17 +1211,17 @@ int ActionScan(PLAYER *pPlayer, int *a2, int *a3)
                 {
                     if (gGameOptions.nGameType > 1 && sub_3A158(pPlayer, pSprite))
                         return -1;
-                    pXSprite->at18_2 = pPlayer->at57;
-                    pXSprite->atd_2 = 0;
+                    pXSprite->data4 = pPlayer->at57;
+                    pXSprite->isTriggered = 0;
                 }
             }
-            if (*a3 > 0 && xsprite[*a3].atd_6)
+            if (*a3 > 0 && xsprite[*a3].Push)
                 return 3;
             if (sprite[*a2].statnum == 6)
             {
                 spritetype *pSprite = &sprite[*a2];
                 XSPRITE *pXSprite = &xsprite[*a3];
-                int nMass = dudeInfo[pSprite->type-kDudeBase].at4;
+                int nMass = dudeInfo[pSprite->type-kDudeBase].mass;
                 if (nMass)
                 {
                     int t2 = divscale(0xccccc, nMass, 8);
@@ -1189,7 +1229,7 @@ int ActionScan(PLAYER *pPlayer, int *a2, int *a3)
                     yvel[*a2] += mulscale16(y, t2);
                     zvel[*a2] += mulscale16(z, t2);
                 }
-                if (pXSprite->atd_6 && !pXSprite->at1_6 && !pXSprite->atd_2)
+                if (pXSprite->Push && !pXSprite->state && !pXSprite->isTriggered)
                     trTriggerSprite(*a2, pXSprite, 30);
             }
             break;
@@ -1197,13 +1237,13 @@ int ActionScan(PLAYER *pPlayer, int *a2, int *a3)
         case 4:
             *a2 = gHitInfo.hitwall;
             *a3 = wall[*a2].extra;
-            if (*a3 > 0 && xwall[*a3].at10_5)
+            if (*a3 > 0 && xwall[*a3].triggerPush)
                 return 0;
             if (wall[*a2].nextsector >= 0)
             {
                 *a2 = wall[*a2].nextsector;
                 *a3 = sector[*a2].extra;
-                if (*a3 > 0 && xsector[*a3].at17_7)
+                if (*a3 > 0 && xsector[*a3].Wallpush)
                     return 6;
             }
             break;
@@ -1211,14 +1251,14 @@ int ActionScan(PLAYER *pPlayer, int *a2, int *a3)
         case 2:
             *a2 = gHitInfo.hitsect;
             *a3 = sector[*a2].extra;
-            if (*a3 > 0 && xsector[*a3].at17_2)
+            if (*a3 > 0 && xsector[*a3].Push)
                 return 6;
             break;
         }
     }
     *a2 = pSprite->sectnum;
     *a3 = sector[*a2].extra;
-    if (*a3 > 0 && xsector[*a3].at17_2)
+    if (*a3 > 0 && xsector[*a3].Push)
         return 6;
     return -1;
 }
@@ -1303,11 +1343,11 @@ void ProcessInput(PLAYER *pPlayer)
             yvel[nSprite] -= mulscale30(strafe, x);
         }
     }
-    else if (pXSprite->at30_0 < 256)
+    else if (pXSprite->height < 256)
     {
         int speed = 0x10000;
-        if (pXSprite->at30_0 > 0)
-            speed -= divscale16(pXSprite->at30_0, 256);
+        if (pXSprite->height > 0)
+            speed -= divscale16(pXSprite->height, 256);
         int x = Cos(pSprite->ang);
         int y = Sin(pSprite->ang);
         if (pInput->forward)
@@ -1317,7 +1357,7 @@ void ProcessInput(PLAYER *pPlayer)
                 forward = mulscale8(pPosture->at0, forward);
             else
                 forward = mulscale8(pPosture->at8, forward);
-            if (pXSprite->at30_0)
+            if (pXSprite->height)
                 forward = mulscale16(forward, speed);
             xvel[nSprite] += mulscale30(forward, x);
             yvel[nSprite] += mulscale30(forward, y);
@@ -1326,7 +1366,7 @@ void ProcessInput(PLAYER *pPlayer)
         {
             int strafe = pInput->strafe;
             strafe = mulscale8(pPosture->at4, strafe);
-            if (pXSprite->at30_0)
+            if (pXSprite->height)
                 strafe = mulscale16(strafe, speed);
             xvel[nSprite] += mulscale30(strafe, y);
             yvel[nSprite] -= mulscale30(strafe, x);
@@ -1368,7 +1408,7 @@ void ProcessInput(PLAYER *pPlayer)
             pPlayer->at2f = 0;
         break;
     default:
-        if (!pPlayer->at31c && pInput->buttonFlags.jump && pXSprite->at30_0 == 0)
+        if (!pPlayer->at31c && pInput->buttonFlags.jump && pXSprite->height == 0)
         {
             sfxPlay3DSound(pSprite, 700, 0, 0);
             if (packItemActive(pPlayer, 4))
@@ -1391,8 +1431,8 @@ void ProcessInput(PLAYER *pPlayer)
             if (a3 > 0 && a3 <= 2048)
             {
                 XSECTOR *pXSector = &xsector[a3];
-                int key = pXSector->at16_7;
-                if (pXSector->at35_0 && pPlayer == gMe)
+                int key = pXSector->Key;
+                if (pXSector->locked && pPlayer == gMe)
                 {
                     viewSetMessage("It's locked");
                     sndStartSample(3062, 255, 2, 0);
@@ -1409,8 +1449,8 @@ void ProcessInput(PLAYER *pPlayer)
         case 0:
         {
             XWALL *pXWall = &xwall[a3];
-            int key = pXWall->at10_2;
-            if (pXWall->at13_2 && pPlayer == gMe)
+            int key = pXWall->key;
+            if (pXWall->locked && pPlayer == gMe)
             {
                 viewSetMessage("It's locked");
                 sndStartSample(3062, 255, 2, 0);
@@ -1427,9 +1467,9 @@ void ProcessInput(PLAYER *pPlayer)
         case 3:
         {
             XSPRITE *pXSprite = &xsprite[a3];
-            int key = pXSprite->atd_3;
-            if (pXSprite->at17_5 && pPlayer == gMe && pXSprite->at1b_0)
-                trTextOver(pXSprite->at1b_0);
+            int key = pXSprite->key;
+            if (pXSprite->locked && pPlayer == gMe && pXSprite->lockMsg)
+                trTextOver(pXSprite->lockMsg);
             if (!key || pPlayer->at88[key])
                 trTriggerSprite(a2, pXSprite, 30);
             else if (pPlayer == gMe)
@@ -1444,37 +1484,37 @@ void ProcessInput(PLAYER *pPlayer)
             pPlayer->at372 = ClipLow(pPlayer->at372-4*(6-gGameOptions.nDifficulty), 0);
         if (pPlayer->at372 <= 0 && pPlayer->at376)
         {
-            spritetype *pSprite2 = sub_36878(pPlayer->pSprite, 212, pPlayer->pSprite->clipdist<<1, 0);
+            spritetype *pSprite2 = actSpawnDude(pPlayer->pSprite, 212, pPlayer->pSprite->clipdist<<1, 0);
             pSprite2->ang = (pPlayer->pSprite->ang+1024)&2047;
             int nSprite = pPlayer->pSprite->index;
             int x = Cos(pPlayer->pSprite->ang)>>16;
             int y = Sin(pPlayer->pSprite->ang)>>16;
-            xvel[pSprite2->index] = xvel[nSprite] + mulscale16(0x155555, x);
-            yvel[pSprite2->index] = yvel[nSprite] + mulscale16(0x155555, y);
+            xvel[pSprite2->index] = xvel[nSprite] + mulscale14(0x155555, x);
+            yvel[pSprite2->index] = yvel[nSprite] + mulscale14(0x155555, y);
             zvel[pSprite2->index] = zvel[nSprite];
             pPlayer->at376 = 0;
         }
         pInput->keyFlags.action = 0;
     }
-    if (pInput->keyFlags.lookCenter && !pInput->buttonFlags.lookUp && !pInput->buttonFlags.lookDown)
-    {
-        if (pPlayer->q16look < 0)
-            pPlayer->q16look = fix16_min(pPlayer->q16look+F16(4), F16(0));
-        if (pPlayer->q16look > 0)
-            pPlayer->q16look = fix16_max(pPlayer->q16look-F16(4), F16(0));
-        if (!pPlayer->q16look)
-            pInput->keyFlags.lookCenter = 0;
-    }
-    else
-    {
-        if (pInput->buttonFlags.lookUp)
-            pPlayer->q16look = fix16_min(pPlayer->q16look+F16(4), F16(60));
-        if (pInput->buttonFlags.lookDown)
-            pPlayer->q16look = fix16_max(pPlayer->q16look-F16(4), F16(-60));
-    }
-    pPlayer->q16look = fix16_clamp(pPlayer->q16look+pInput->q16mlook, F16(-60), F16(60));
     if (bVanilla)
     {
+        if (pInput->keyFlags.lookCenter && !pInput->buttonFlags.lookUp && !pInput->buttonFlags.lookDown)
+        {
+            if (pPlayer->q16look < 0)
+                pPlayer->q16look = fix16_min(pPlayer->q16look+F16(4), F16(0));
+            if (pPlayer->q16look > 0)
+                pPlayer->q16look = fix16_max(pPlayer->q16look-F16(4), F16(0));
+            if (!pPlayer->q16look)
+                pInput->keyFlags.lookCenter = 0;
+        }
+        else
+        {
+            if (pInput->buttonFlags.lookUp)
+                pPlayer->q16look = fix16_min(pPlayer->q16look+F16(4), F16(60));
+            if (pInput->buttonFlags.lookDown)
+                pPlayer->q16look = fix16_max(pPlayer->q16look-F16(4), F16(-60));
+        }
+        pPlayer->q16look = fix16_clamp(pPlayer->q16look+pInput->q16mlook, F16(-60), F16(60));
         if (pPlayer->q16look > 0)
             pPlayer->q16horiz = fix16_from_int(mulscale30(120, Sin(fix16_to_int(pPlayer->q16look)<<3)));
         else if (pPlayer->q16look < 0)
@@ -1484,17 +1524,33 @@ void ProcessInput(PLAYER *pPlayer)
     }
     else
     {
-        if (pPlayer->q16look > 0)
-            pPlayer->q16horiz = mulscale30(F16(120), Sin(fix16_to_int(pPlayer->q16look<<3)));
-        else if (pPlayer->q16look < 0)
-            pPlayer->q16horiz = mulscale30(F16(180), Sin(fix16_to_int(pPlayer->q16look<<3)));
+        CONSTEXPR int upAngle = 289;
+        CONSTEXPR int downAngle = -347;
+        CONSTEXPR double lookStepUp = 4.0*upAngle/60.0;
+        CONSTEXPR double lookStepDown = -4.0*downAngle/60.0;
+        if (pInput->keyFlags.lookCenter && !pInput->buttonFlags.lookUp && !pInput->buttonFlags.lookDown)
+        {
+            if (pPlayer->q16look < 0)
+                pPlayer->q16look = fix16_min(pPlayer->q16look+F16(lookStepDown), F16(0));
+            if (pPlayer->q16look > 0)
+                pPlayer->q16look = fix16_max(pPlayer->q16look-F16(lookStepUp), F16(0));
+            if (!pPlayer->q16look)
+                pInput->keyFlags.lookCenter = 0;
+        }
         else
-            pPlayer->q16horiz = 0;
+        {
+            if (pInput->buttonFlags.lookUp)
+                pPlayer->q16look = fix16_min(pPlayer->q16look+F16(lookStepUp), F16(upAngle));
+            if (pInput->buttonFlags.lookDown)
+                pPlayer->q16look = fix16_max(pPlayer->q16look-F16(lookStepDown), F16(downAngle));
+        }
+        pPlayer->q16look = fix16_clamp(pPlayer->q16look+(pInput->q16mlook<<3), F16(downAngle), F16(upAngle));
+        pPlayer->q16horiz = fix16_from_float(100.f*tanf(fix16_to_float(pPlayer->q16look)*fPI/1024.f));
     }
     int nSector = pSprite->sectnum;
     int florhit = gSpriteHit[pSprite->extra].florhit & 0xe000;
     char va;
-    if (pXSprite->at30_0 < 16 && (florhit == 0x4000 || florhit == 0))
+    if (pXSprite->height < 16 && (florhit == 0x4000 || florhit == 0))
         va = 1;
     else
         va = 0;
@@ -1628,7 +1684,7 @@ void playerProcess(PLAYER *pPlayer)
     }
     else
     {
-        if (pXSprite->at30_0 < 256)
+        if (pXSprite->height < 256)
         {
             pPlayer->at3b = (pPlayer->at3b+pPosture->atc[pPlayer->at2e]*4) & 2047;
             pPlayer->at4b = (pPlayer->at4b+(pPosture->atc[pPlayer->at2e]*4)/2) & 2047;
@@ -1908,7 +1964,7 @@ int playerDamageSprite(int nSource, PLAYER *pPlayer, DAMAGE_TYPE nDamageType, in
                 nSound = pDamageInfo->at4[0];
             else
                 nSound = pDamageInfo->at4[Random(3)];
-            if (nDamageType == DAMAGE_TYPE_4 && pXSprite->at17_6 == 1 && !pPlayer->at376)
+            if (nDamageType == DAMAGE_TYPE_4 && pXSprite->medium == 1 && !pPlayer->at376)
                 nSound = 714;
             sfxPlay3DSound(pSprite, nSound, 0, 6);
             return nDamage;
@@ -1968,7 +2024,7 @@ int playerDamageSprite(int nSource, PLAYER *pPlayer, DAMAGE_TYPE nDamageType, in
     if (nDeathSeqID != 16)
     {
         powerupClear(pPlayer);
-        if (nXSector > 0 && xsector[nXSector].at17_6)
+        if (nXSector > 0 && xsector[nXSector].Exit)
             trTriggerSector(pSprite->sectnum, &xsector[nXSector], 43);
         pSprite->hitag |= 7;
         for (int p = connecthead; p >= 0; p = connectpoint2[p])

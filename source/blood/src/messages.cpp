@@ -596,7 +596,7 @@ void CCheatMgr::Process(CCheatMgr::CHEATCODE nCheatCode, char* pzArgs)
     if (gDemo.at0) return;
     if (nCheatCode == kCheat27)
     {
-        gShowFrameRate = !gShowFrameRate;
+        gShowFps = !gShowFps;
         return;
     }
     if (gGameOptions.nGameType != 0)
@@ -638,7 +638,7 @@ void CCheatMgr::Process(CCheatMgr::CHEATCODE nCheatCode, char* pzArgs)
         break;
     case kCheat10:
     {
-        if (!gMe->pXSprite->at2c_0)
+        if (!gMe->pXSprite->burnTime)
             evPost(gMe->at5b, 3, 0, CALLBACK_ID_0);
         actBurnSprite(actSpriteIdToOwnerId(gMe->at5b), gMe->pXSprite, 2400);
         viewSetMessage("You're fired!");
@@ -652,7 +652,7 @@ void CCheatMgr::Process(CCheatMgr::CHEATCODE nCheatCode, char* pzArgs)
     {
         actHealDude(gMe->pXSprite, 200, 200);
         gMe->at33e[1] = 200;
-        if (!gMe->pXSprite->at2c_0)
+        if (!gMe->pXSprite->burnTime)
             evPost(gMe->at5b, 3, 0, CALLBACK_ID_0);
         actBurnSprite(actSpriteIdToOwnerId(gMe->at5b), gMe->pXSprite, 2400);
         viewSetMessage("Flame retardant!");

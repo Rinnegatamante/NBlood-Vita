@@ -43,7 +43,7 @@ L_State g_engState;
 //////////
 // Compilation switches for optional/extended engine features
 
-#if (defined(__PSP2__)) || (!defined(__arm__) && !defined(GEKKO))
+#if (defined(__PSP2__)) || !defined(__arm__) && !defined(GEKKO)
 # define HIGH_PRECISION_SPRITE
 #endif
 
@@ -282,11 +282,12 @@ void yax_updategrays(int32_t posze)
 
 int32_t g_nodraw = 0;
 int32_t scansector_retfast = 0;
-static int32_t scansector_collectsprites = 1;
+int32_t scansector_collectsprites = 1;
 int32_t yax_globalcf = -1, yax_nomaskpass=0, yax_nomaskdidit;  // engine internal
 int32_t r_tror_nomaskpass = 1;  // cvar
 int32_t yax_globallev = YAX_MAXDRAWS;
 int32_t yax_globalbunch = -1;
+int32_t yax_polymostclearzbuffer = 1;
 
 // duplicated tsprites
 //  [i]:
@@ -1013,6 +1014,14 @@ void yax_drawrooms(void (*SpriteAnimFunc)(int32_t,int32_t,int32_t,int32_t),
 #endif
     }
 
+#ifdef USE_OPENGL
+    if (videoGetRenderMode() == REND_POLYMOST)
+    {
+        glClear(GL_DEPTH_BUFFER_BIT);
+        yax_polymostclearzbuffer = 0;
+    }
+#endif
+
     for (cf=0; cf<2; cf++)
     {
         yax_globalcf = cf;
@@ -1126,6 +1135,10 @@ void yax_drawrooms(void (*SpriteAnimFunc)(int32_t,int32_t,int32_t,int32_t),
         }
         videoEndDrawing();
     }
+#endif
+#ifdef USE_OPENGL
+    if (videoGetRenderMode() == REND_POLYMOST)
+        yax_polymostclearzbuffer = 1;
 #endif
 }
 
@@ -1375,6 +1388,9 @@ int32_t cosviewingrangeglobalang, sinviewingrangeglobalang;
 static int32_t globaluclip, globaldclip;
 int32_t globvis, globalvisibility;
 int32_t globalhisibility, globalpisibility, globalcisibility;
+#ifdef USE_OPENGL
+int32_t globvis2, globalvisibility2, globalhisibility2, globalpisibility2, globalcisibility2;
+#endif
 //char globparaceilclip, globparaflorclip;
 
 int32_t xyaspect;
@@ -1447,7 +1463,7 @@ int16_t searchsector, searchwall, searchstat;     //search output
 //  When aiming at a 2-sided wall, 1 if aiming at the bottom part, 0 else
 int16_t searchbottomwall, searchisbottom;
 
-char inpreparemirror = 0;
+char inpreparemirror = 0, mirrorrender = 0;
 static int32_t mirrorsx1, mirrorsy1, mirrorsx2, mirrorsy2;
 
 static int32_t setviewcnt = 0; // interface layers use this now
@@ -2760,7 +2776,7 @@ static void ceilscan(int32_t x1, int32_t x2, int32_t sectnum)
         tsethlineshift(picsiz[globalpicnum]&15,picsiz[globalpicnum]>>4);
         break;
     case 384:
-        setup_blend(0, 0);
+        setup_blend(0, 1);
         tsethlineshift(picsiz[globalpicnum]&15,picsiz[globalpicnum]>>4);
         break;
     }
@@ -3202,8 +3218,8 @@ static void nonpow2_mhline(intptr_t bufplc, uint32_t bx, int32_t cntup16, uint32
     const char *const A_C_RESTRICT pal = (char *)asm3;
 
     const uint32_t xmul = globalxspan;
-	const uint32_t ymul = globalyspan;
-	const uint32_t yspan = globalyspan;
+    const uint32_t ymul = globalyspan;
+    const uint32_t yspan = globalyspan;
     const int32_t xinc = asm1, yinc = asm2;
 
     for (cntup16>>=16; cntup16>0; cntup16--)
@@ -3227,8 +3243,8 @@ static void nonpow2_thline(intptr_t bufplc, uint32_t bx, int32_t cntup16, uint32
     const char *const A_C_RESTRICT trans = paletteGetBlendTable(globalblend);
 
     const uint32_t xmul = globalxspan;
-	const uint32_t ymul = globalyspan;
-	const uint32_t yspan = globalyspan;
+    const uint32_t ymul = globalyspan;
+    const uint32_t yspan = globalyspan;
     const int32_t xinc = asm1, yinc = asm2;
 
     if (globalorientation&512)
@@ -3358,7 +3374,6 @@ static inline void setupslopevlin_alsotrans(int32_t logylogx, intptr_t bufplc, i
 static void tslopevlin(uint8_t *p, const intptr_t *slopalptr, bssize_t cnt, int32_t bx, int32_t by)
 {
     const char *const A_C_RESTRICT buf = ggbuf;
-    const char *const A_C_RESTRICT pal = ggpal;
     const char *const A_C_RESTRICT trans = paletteGetBlendTable(0);
     const int32_t bzinc = (asm1>>3), pinc = ggpinc;
 
@@ -3373,10 +3388,38 @@ static void tslopevlin(uint8_t *p, const intptr_t *slopalptr, bssize_t cnt, int3
         int const i = (sloptable[(bz>>6)+8192]); bz += bzinc;
         uint32_t u = bx + xtou*i;
         uint32_t v = by + ytov*i;
-        uint8_t ch = *(uint8_t *)(slopalptr[0] + buf[((u>>(32-logx))<<logy)+(v>>(32-logy))]);
-
+        uint8_t ch = buf[((u>>(32-logx))<<logy)+(v>>(32-logy))];
         if (ch != 255)
-            *p = trans[transmode ? *p|(pal[ch]<<8) : (*p<<8)|pal[ch]];
+        {
+            ch = *(uint8_t *)(slopalptr[0] + ch);
+            *p = trans[transmode ? *p|(ch<<8) : (*p<<8)|ch];
+        }
+
+        slopalptr--;
+        p += pinc;
+    }
+    while (--cnt);
+}
+ 
+// cnt iterations
+static void mslopevlin(uint8_t *p, const intptr_t *slopalptr, bssize_t cnt, int32_t bx, int32_t by)
+{
+    const char *const A_C_RESTRICT buf = ggbuf;
+    const int32_t bzinc = (asm1>>3), pinc = ggpinc;
+
+    const uint32_t xtou = globalx3, ytov = globaly3;
+    const int32_t logx = gglogx, logy = gglogy;
+
+    int32_t bz = asm3;
+
+    do
+    {
+        int const i = (sloptable[(bz>>6)+8192]); bz += bzinc;
+        uint32_t u = bx + xtou*i;
+        uint32_t v = by + ytov*i;
+        uint8_t ch = buf[((u>>(32-logx))<<logy)+(v>>(32-logy))];
+        if (ch != 255)
+            *p = *(uint8_t *)(slopalptr[0] + ch);
 
         slopalptr--;
         p += pinc;
@@ -3548,10 +3591,19 @@ static void grouscan(int32_t dax1, int32_t dax2, int32_t sectnum, char dastat)
             globalx3 = (globalx2>>10);
             globaly3 = (globaly2>>10);
             asm3 = mulscale16(y2,globalzd) + (globalzx>>6);
-            if ((globalorientation&256)==0)
+            switch (globalorientation&0x180)
+            {
+            case 0:
                 slopevlin(ylookup[y2]+x+frameoffset,krecipasm(asm3>>3),(intptr_t)nptr2,y2-y1+1,globalx1,globaly1);
-            else
+                break;
+            case 128:
+                mslopevlin((uint8_t *)(ylookup[y2]+x+frameoffset),nptr2,y2-y1+1,globalx1,globaly1);
+                break;
+            case 256:
+            case 384:
                 tslopevlin((uint8_t *)(ylookup[y2]+x+frameoffset),nptr2,y2-y1+1,globalx1,globaly1);
+                break;
+            }
 
             if ((x&15) == 0) faketimerhandler();
         }
@@ -5801,9 +5853,6 @@ static void renderDrawSprite(int32_t snum)
 #ifdef USE_OPENGL
     case REND_POLYMOST:
         polymost_drawsprite(snum);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glDepthFunc(GL_LESS); //NEVER,LESS,(,L)EQUAL,GREATER,(NOT,G)EQUAL,ALWAYS
-//        glDepthRange(0.0, 1.0); //<- this is more widely supported than glPolygonOffset
         return;
 # ifdef POLYMER
     case REND_POLYMER:
@@ -5937,7 +5986,13 @@ static void renderFillPolygon(int32_t npoints)
 #ifdef USE_OPENGL
     if (videoGetRenderMode() >= REND_POLYMOST && in3dmode())
     {
-        polymost_fillpolygon(npoints);
+#ifdef POLYMER
+        if (videoGetRenderMode() == REND_POLYMER)
+            polymer_fillpolygon(npoints);
+        else
+#endif
+            polymost_fillpolygon(npoints);
+
         return;
     }
 #endif
@@ -7472,6 +7527,11 @@ int32_t lintersect(int32_t x1, int32_t y1, int32_t z1,
     return 1;
 }
 
+//
+// rintersect (internal)
+//
+// returns: -1 if didn't intersect, coefficient (x3--x4 fraction)<<16 else
+
 int32_t rintersect_old(int32_t x1, int32_t y1, int32_t z1, int32_t vx, int32_t vy, int32_t vz, int32_t x3,
     int32_t y3, int32_t x4, int32_t y4, int32_t *intx, int32_t *inty, int32_t *intz)
 {     //p1 towards p2 is a ray
@@ -7499,17 +7559,12 @@ int32_t rintersect_old(int32_t x1, int32_t y1, int32_t z1, int32_t vx, int32_t v
     t = divscale16(topu, bot);
     return t;
 }
-
-//
-// rintersect (internal)
-//
-// returns: -1 if didn't intersect, coefficient (x3--x4 fraction)<<16 else
 int32_t rintersect(int32_t x1, int32_t y1, int32_t z1,
                    int32_t vx_, int32_t vy_, int32_t vz,
                    int32_t x3, int32_t y3, int32_t x4, int32_t y4,
                    int32_t *intx, int32_t *inty, int32_t *intz)
 {
-	if (blooddemohack)
+    if (blooddemohack)
     {
         return rintersect_old(x1, y1, z1, vx_, vy_, vz, x3, y3, x4, y4, intx, inty, intz);
     }
@@ -8021,6 +8076,7 @@ int32_t renderDrawRoomsQ16(int32_t daposx, int32_t daposy, int32_t daposz,
             globalvisibility = scale(g_visibility<<2, xdimen, 1680);
         else
             globalvisibility = scale(g_visibility<<2, xdimen, 1100);
+        globalvisibility2 = mulscale16(g_visibility, i);
         break;
 # ifdef POLYMER
     case REND_POLYMER:
@@ -8039,6 +8095,11 @@ int32_t renderDrawRoomsQ16(int32_t daposx, int32_t daposy, int32_t daposz,
 
     globalhisibility = mulscale16(globalvisibility,xyaspect);
     globalcisibility = mulscale8(globalhisibility,320);
+
+#ifdef USE_OPENGL
+    globalhisibility2 = mulscale16(globalvisibility2,xyaspect);
+    globalcisibility2 = mulscale8(globalhisibility2,320);
+#endif
 
     globalcursectnum = dacursectnum;
     totalclocklock = totalclock;
@@ -8421,12 +8482,36 @@ void renderDrawMasks(void)
 #else
 # define debugmask_add(dispidx, idx) do {} while (0)
 #endif
-    int32_t i;
+    int32_t i = spritesortcnt-1;
+    int32_t numSprites = spritesortcnt;
 
-    for (i=spritesortcnt-1; i>=0; i--)
-        tspriteptr[i] = &tsprite[i];
+    if (videoGetRenderMode() == REND_POLYMOST)
+    {
+        spritesortcnt = 0;
+        int32_t back = i;
+        for (; i >= 0; --i)
+        {
+#ifdef USE_OPENGL
+            if (polymost_spriteHasTranslucency(&tsprite[i]))
+            {
+                tspriteptr[spritesortcnt] = &tsprite[i];
+                ++spritesortcnt;
+            } else
+#endif
+            {
+                tspriteptr[back] = &tsprite[i];
+                --back;
+            }
+        }
+    } else
+    {
+        for (; i >= 0; --i)
+        {
+            tspriteptr[i] = &tsprite[i];
+        }
+    }
 
-    for (i=spritesortcnt-1; i>=0; i--)
+    for (i=spritesortcnt-1; i>=0; --i)
     {
         const int32_t xs = tspriteptr[i]->x-globalposx, ys = tspriteptr[i]->y-globalposy;
         const int32_t yp = dmulscale6(xs,cosviewingrangeglobalang,ys,sinviewingrangeglobalang);
@@ -8450,12 +8535,17 @@ killsprite:
             if (!modelp)
 #endif
             {
-                spritesortcnt--;  //Delete face sprite if on wrong side!
-                if (i != spritesortcnt)
+                //Delete face sprite if on wrong side!
+                --numSprites;
+                --spritesortcnt;
+                if (i != numSprites)
                 {
                     tspriteptr[i] = tspriteptr[spritesortcnt];
                     spritesxyz[i].x = spritesxyz[spritesortcnt].x;
                     spritesxyz[i].y = spritesxyz[spritesortcnt].y;
+                    tspriteptr[spritesortcnt] = tspriteptr[numSprites];
+                    spritesxyz[spritesortcnt].x = spritesxyz[numSprites].x;
+                    spritesxyz[spritesortcnt].y = spritesxyz[numSprites].y;
                 }
                 continue;
             }
@@ -8476,13 +8566,11 @@ killsprite:
                 swaplong(&spritesxyz[l].y,&spritesxyz[l+gap].y);
             }
 
-    if (spritesortcnt > 0)
-        spritesxyz[spritesortcnt].y = (spritesxyz[spritesortcnt-1].y^1);
-
     ys = spritesxyz[0].y; i = 0;
     for (bssize_t j=1; j<=spritesortcnt; j++)
     {
-        if (spritesxyz[j].y == ys)
+        if (j == spritesortcnt ||
+            spritesxyz[j].y == ys)
             continue;
 
         ys = spritesxyz[j].y;
@@ -8535,26 +8623,63 @@ killsprite:
     }
 
     videoBeginDrawing(); //{{{
-#if 0
-    for (i=spritesortcnt-1; i>=0; i--)
+
+#ifdef USE_OPENGL
+    if (videoGetRenderMode() == REND_POLYMOST)
     {
-        double xs = tspriteptr[i]->x-globalposx;
-        double ys = tspriteptr[i]->y-globalposy;
-        int32_t zs = tspriteptr[i]->z-globalposz;
-
-        int32_t xp = ys*cosglobalang-xs*singlobalang;
-        int32_t yp = (zs<<1);
-        int32_t zp = xs*cosglobalang+ys*singlobalang;
-
-        xs = ((double)xp*(halfxdimen<<12)/zp)+((halfxdimen+windowxy1.x)<<12);
-        ys = ((double)yp*(xdimenscale<<12)/zp)+((globalhoriz+windowxy1.y)<<12);
-
-        if (xs >= INT32_MIN && xs <= INT32_MAX && ys >= INT32_MIN && ys <= INT32_MAX)
+        glDisable(GL_BLEND);
+        glEnable(GL_ALPHA_TEST);
+ 
+        for (i = spritesortcnt; i < numSprites; ++i)
         {
-            drawline256(xs-65536,ys-65536,xs+65536,ys+65536,31);
-            drawline256(xs+65536,ys-65536,xs-65536,ys+65536,31);
+            if (tspriteptr[i] != NULL)
+            {
+                debugmask_add(i | 32768, tspriteptr[i]->owner);
+                renderDrawSprite(i);
+                
+                tspriteptr[i] = NULL;
+            }
         }
+
+        for (i = 0; i < maskwallcnt;)
+        {
+            if (polymost_maskWallHasTranslucency((uwalltype *) &wall[thewall[maskwall[maskwallcnt-1]]]))
+            {
+                int16_t maskSwap = maskwall[i];
+                maskwall[i] = maskwall[maskwallcnt-1];
+                maskwall[maskwallcnt-1] = maskSwap;
+                ++i;
+            }
+            else
+                renderDrawMaskedWall(--maskwallcnt);
+        }
+ 
+        glEnable(GL_BLEND);
+        glEnable(GL_ALPHA_TEST);
+        glDepthMask(GL_FALSE);
     }
+#endif
+
+#if 0
+        for (i=spritesortcnt-1; i>=0; i--)
+        {
+            double xs = tspriteptr[i]->x-globalposx;
+            double ys = tspriteptr[i]->y-globalposy;
+            int32_t zs = tspriteptr[i]->z-globalposz;
+
+            int32_t xp = ys*cosglobalang-xs*singlobalang;
+            int32_t yp = (zs<<1);
+            int32_t zp = xs*cosglobalang+ys*singlobalang;
+
+            xs = ((double)xp*(halfxdimen<<12)/zp)+((halfxdimen+windowxy1.x)<<12);
+            ys = ((double)yp*(xdimenscale<<12)/zp)+((globalhoriz+windowxy1.y)<<12);
+
+            if (xs >= INT32_MIN && xs <= INT32_MAX && ys >= INT32_MIN && ys <= INT32_MAX)
+            {
+                drawline256(xs-65536,ys-65536,xs+65536,ys+65536,31);
+                drawline256(xs+65536,ys-65536,xs-65536,ys+65536,31);
+            }
+        }
 #endif
 
     vec2f_t pos;
@@ -8584,11 +8709,7 @@ killsprite:
         while (i)
         {
             i--;
-            if (tspriteptr[i] != NULL
-#ifdef USE_OPENGL
-                && (!(tspriteptr[i]->cstat & 1024) || videoGetRenderMode() != REND_POLYMOST)
-#endif
-               )
+            if (tspriteptr[i] != NULL)
             {
                 vec2f_t spr;
                 const uspritetype *tspr = tspriteptr[i];
@@ -8671,44 +8792,20 @@ killsprite:
         renderDrawMaskedWall(maskwallcnt);
     }
 
-    i = spritesortcnt;
-
-    while (i)
+    while (spritesortcnt)
     {
-        i--;
-        if (tspriteptr[i] != NULL
-#ifdef USE_OPENGL
-            && (!(tspriteptr[i]->cstat & 1024) || videoGetRenderMode() != REND_POLYMOST)
-#endif
-           )
+        --spritesortcnt;
+        if (tspriteptr[spritesortcnt] != NULL)
         {
             debugmask_add(i | 32768, tspriteptr[i]->owner);
-            renderDrawSprite(i);
-
-            tspriteptr[i] = NULL;
+            renderDrawSprite(spritesortcnt);
+            tspriteptr[spritesortcnt] = NULL;
         }
     }
-
 #ifdef USE_OPENGL
     if (videoGetRenderMode() == REND_POLYMOST)
-    {
-        glDepthMask(GL_FALSE);
-
-        while (spritesortcnt)
-        {
-            spritesortcnt--;
-            if (tspriteptr[spritesortcnt] != NULL)
-            {
-                Bassert(tspriteptr[spritesortcnt]->cstat & 1024);
-                renderDrawSprite(spritesortcnt);
-                tspriteptr[spritesortcnt] = NULL;
-            }
-        }
-
         glDepthMask(GL_TRUE);
-    }
 #endif
-    spritesortcnt = 0;
 
 #ifdef POLYMER
     if (videoGetRenderMode() == REND_POLYMER)
@@ -9868,7 +9965,7 @@ static void videoAllocateBuffers(void)
 {
     int32_t i;
     // Needed for the game's TILT_SETVIEWTOTILE_320.
-    const int32_t clamped_ydim = max((int)ydim, 320);
+    const int32_t clamped_ydim = max(ydim, (long int)320);
 
     struct
     {
@@ -9926,8 +10023,18 @@ static void videoAllocateBuffers(void)
 }
 
 #ifdef USE_OPENGL
+void (*PolymostProcessVoxels_Callback)(void) = NULL;
 static void PolymostProcessVoxels(void)
 {
+# ifdef USE_GLEXT
+    for (bssize_t i = 0; i < MAXVOXELS; i++)
+    {
+        if (voxmodels[i])
+            voxvboalloc(voxmodels[i]);
+    }
+# endif
+    if (PolymostProcessVoxels_Callback)
+        PolymostProcessVoxels_Callback();
     if (!g_haveVoxels)
         return;
 
@@ -9946,6 +10053,17 @@ static void PolymostProcessVoxels(void)
         }
     }
 }
+
+static void PolymostFreeVBOs(void)
+{
+# ifdef USE_GLEXT
+    for (bssize_t i = 0; i < MAXVOXELS; i++)
+    {
+        if (voxmodels[i])
+            voxvbofree(voxmodels[i]);
+    }
+# endif
+}
 #endif
 
 //
@@ -9962,8 +10080,8 @@ int32_t videoSetGameMode(char davidoption, int32_t daupscaledxdim, int32_t daups
 
     if (nogl) dabpp = 8;
 #endif
-    daupscaledxdim = max((int32_t)320, daupscaledxdim);
-    daupscaledydim = max((int32_t)200, daupscaledydim);
+    daupscaledxdim = max((long int)320, daupscaledxdim);
+    daupscaledydim = max((long int)200, daupscaledydim);
 
     if (in3dmode() && videomodereset == 0 && (davidoption == fullscreen) &&
         (xres == daupscaledxdim) && (yres == daupscaledydim) && (bpp == dabpp) && (upscalefactor == daupscalefactor))
@@ -9981,6 +10099,9 @@ int32_t videoSetGameMode(char davidoption, int32_t daupscaledxdim, int32_t daups
     j = bpp;
 
     g_lastpalettesum = 0;
+#ifdef USE_OPENGL
+    PolymostFreeVBOs();
+#endif
     if (videoSetMode(daupscaledxdim,daupscaledydim,dabpp,davidoption) < 0) return -1;
 
     // Workaround possible bugs in the GL driver
@@ -9991,7 +10112,7 @@ int32_t videoSetGameMode(char davidoption, int32_t daupscaledxdim, int32_t daups
     else rendmode = REND_CLASSIC;
 #endif
 
-    upscalefactor = max(1, (int)min(tabledivide32(yres, 200), (long int)daupscalefactor));
+    upscalefactor = max((long int)1, min(tabledivide32(yres, (long int)200), daupscalefactor));
     //POGOTODO: Polymost/Polymer could work with upscaling with a couple more changes
     int32_t scalefactor = upscalefactor;
 #ifdef RENDERTYPESDL
@@ -10856,6 +10977,10 @@ static int32_t try_facespr_intersect(uspritetype const * const spr, const vec3_t
     return 0;
 }
 
+//
+// hitscan
+//
+
 int hitscan_old(int32_t xs, int32_t ys, int32_t zs, short sectnum, int32_t vx, int32_t vy, int32_t vz,
     int16_t *hitsect, int16_t *hitwall, int16_t *hitsprite,
     int32_t *hitx, int32_t *hity, int32_t *hitz, uint32_t cliptype)
@@ -10863,7 +10988,7 @@ int hitscan_old(int32_t xs, int32_t ys, int32_t zs, short sectnum, int32_t vx, i
     usectortype *sec;
     uwalltype *wal, *wal2;
     uspritetype *spr;
-    int32_t z, zz, x1, y1, z1, x2, y2, z2, x3, y3, x4, y4, intx, inty, intz;
+    int32_t z, zz, x1, y1, z1, x2, y2, x3, y3, x4, y4, intx, inty, intz;
     int32_t topt, topu, bot, dist, offx, offy, cstat;
     int32_t i, j, k, l, tilenum, xoff, yoff, dax, day, daz, daz2;
     int32_t ang, cosang, sinang, xspan, yspan, xrepeat, yrepeat;
@@ -11125,17 +11250,13 @@ int hitscan_old(int32_t xs, int32_t ys, int32_t zs, short sectnum, int32_t vx, i
     return(0);
 }
 
-//
-// hitscan
-//
 int32_t hitscan(const vec3_t *sv, int16_t sectnum, int32_t vx, int32_t vy, int32_t vz,
                 hitdata_t *hit, uint32_t cliptype)
 {
-	if (blooddemohack)
+    if (blooddemohack)
     {
         return hitscan_old(sv->x, sv->y, sv->z, sectnum, vx, vy, vz, &hit->sect, &hit->wall, &hit->sprite, &hit->pos.x, &hit->pos.y, &hit->pos.z, cliptype);
     }
-	
     int32_t x1, y1=0, z1=0, x2, y2, intx, inty, intz;
     int32_t i, k, daz;
     int16_t tempshortcnt, tempshortnum;
@@ -12448,7 +12569,7 @@ void videoSetCorrectedAspect()
 {
     if (r_usenewaspect && newaspect_enable && videoGetRenderMode() != REND_POLYMER)
     {
-		// In DOS the game world is displayed with an aspect of 1.28 instead 1.333,
+        // In DOS the game world is displayed with an aspect of 1.28 instead 1.333,
         // meaning we have to stretch it by a factor of 1.25 instead of 1.2
         // to get perfect squares
         int32_t yx = (65536 * 5) / 4;
@@ -12826,6 +12947,7 @@ void squarerotatetile(int16_t tilenume)
 void renderPrepareMirror(int32_t dax, int32_t day, fix16_t daang, int16_t dawall,
                          int32_t *tposx, int32_t *tposy, fix16_t *tang)
 {
+    mirrorrender = 1;
     const int32_t x = wall[dawall].x, dx = wall[wall[dawall].point2].x-x;
     const int32_t y = wall[dawall].y, dy = wall[wall[dawall].point2].y-y;
 
@@ -12848,6 +12970,7 @@ static int16_t mirbakdasector;
 void renderPrepareMirrorOld(int32_t dax, int32_t day, int32_t daz, fix16_t daang, fix16_t dahoriz,
                             int16_t dawall, int16_t dasector, int32_t *tposx, int32_t *tposy, fix16_t *tang)
 {
+    mirrorrender = 1;
     const int32_t x = wall[dawall].x, dx = wall[wall[dawall].point2].x-x;
     const int32_t y = wall[dawall].y, dy = wall[wall[dawall].point2].y-y;
 
@@ -12887,6 +13010,7 @@ void renderPrepareMirrorOld(int32_t dax, int32_t day, int32_t daz, fix16_t daang
 //
 void renderCompleteMirror(void)
 {
+    mirrorrender = 0;
 #ifdef USE_OPENGL
     if (videoGetRenderMode() != REND_CLASSIC)
         return;
@@ -12941,6 +13065,7 @@ void renderCompleteMirror(void)
 
 void renderCompleteMirrorOld(void)
 {
+    mirrorrender = 0;
 #ifdef USE_OPENGL
     if (videoGetRenderMode() != REND_CLASSIC)
         return;
@@ -13467,7 +13592,14 @@ void printext256(int32_t xpos, int32_t ypos, int16_t col, int16_t backcol, const
     else { fontptr = textfont; charxsiz = 8; }
 
 #ifdef USE_OPENGL
-    if (!polymost_printext256(xpos,ypos,col,backcol,name,fontsize)) return;
+#ifdef POLYMER
+    if (videoGetRenderMode() == REND_POLYMER)
+    {
+        if (!polymer_printtext256(xpos,ypos,col,backcol,name,fontsize)) return;
+    }
+    else
+#endif
+        if (!polymost_printtext256(xpos,ypos,col,backcol,name,fontsize)) return;
 # if 0
     if (videoGetRenderMode() >= REND_POLYMOST && in3dmode())
     {

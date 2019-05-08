@@ -48,7 +48,7 @@ struct PLAYER {
     //short atc; // INPUT
     //char at10; // forward
     //short at11; // turn
-    //char at13; // strafe
+    //char hearDist; // strafe
     //int at14; // buttonFlags
     //unsigned int at18; // keyFlags
     //char at1c; // useFlags;
@@ -149,6 +149,7 @@ struct PLAYER {
     fix16_t q16ang;
     int angold;
     int player_par;
+    int nWaterPal;
 };
 
 struct POSTURE {

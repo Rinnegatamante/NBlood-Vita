@@ -89,7 +89,7 @@ Resource gSysRes, gGuiRes;
 
 INPUT_MODE gInputMode;
 
-unsigned int nMaxAlloc = 0x2000000;
+unsigned int nMaxAlloc = 0x4000000;
 
 bool bCustomName = false;
 char bAddUserMap = false;
@@ -464,7 +464,7 @@ void PreloadCache(void)
     if (gDemo.at1)
         return;
     sndPlaySpecialMusicOrNothing(MUS_LOADING);
-	gSoundRes.PrecacheSounds();
+    gSoundRes.PrecacheSounds();
     PreloadTiles();
     int clock = totalclock;
     int cnt = 0;
@@ -585,11 +585,11 @@ void StartLevel(GAMEOPTIONS *gameOptions)
         if (pSprite->statnum < kMaxStatus && pSprite->extra > 0)
         {
             XSPRITE *pXSprite = &xsprite[pSprite->extra];
-            if ((pXSprite->ate_7&(1<<gameOptions->nDifficulty))
-            || (pXSprite->atf_4 && gameOptions->nGameType == 0)
-            || (pXSprite->atf_5 && gameOptions->nGameType == 2)
-            || (pXSprite->atb_7 && gameOptions->nGameType == 3)
-            || (pXSprite->atf_6 && gameOptions->nGameType == 1))
+            if ((pXSprite->lSkill&(1<<gameOptions->nDifficulty))
+            || (pXSprite->lS && gameOptions->nGameType == 0)
+            || (pXSprite->lB && gameOptions->nGameType == 2)
+            || (pXSprite->lT && gameOptions->nGameType == 3)
+            || (pXSprite->lC && gameOptions->nGameType == 1))
                 DeleteSprite(i);
         }
     }
@@ -602,6 +602,21 @@ void StartLevel(GAMEOPTIONS *gameOptions)
         gStartZone[i].z = startpos.z;
         gStartZone[i].sectnum = startsectnum;
         gStartZone[i].ang = startang;
+
+        // By NoOne: Create spawn zones for players in teams mode.
+        if (i <= kMaxPlayers / 2) {
+            gStartZoneTeam1[i].x = startpos.x;
+            gStartZoneTeam1[i].y = startpos.y;
+            gStartZoneTeam1[i].z = startpos.z;
+            gStartZoneTeam1[i].sectnum = startsectnum;
+            gStartZoneTeam1[i].ang = startang;
+
+            gStartZoneTeam2[i].x = startpos.x;
+            gStartZoneTeam2[i].y = startpos.y;
+            gStartZoneTeam2[i].z = startpos.z;
+            gStartZoneTeam2[i].sectnum = startsectnum;
+            gStartZoneTeam2[i].ang = startang;
+        }
     }
     InitSectorFX();
     warpInit();
@@ -987,7 +1002,7 @@ SWITCH switches[] = {
     //{ "nocd", 11, 0 },
     //{ "8250", 12, 0 },
     { "ini", 13, 1 },
-    //{ "noaim", 14, 0 },
+    { "noaim", 14, 0 },
     { "f", 15, 1 },
     { "control", 16, 1 },
     { "vector", 17, 1 },
@@ -1355,12 +1370,6 @@ void ParseOptions(void)
 
 void ClockStrobe()
 {
-    if (handleevents() && quitevent)
-    {
-        KB_KeyDown[sc_Escape] = 1;
-        quitevent = 0;
-    }
-    MUSIC_Update();
     gGameClock++;
 }
 
@@ -1448,8 +1457,8 @@ int app_main(int argc, char const * const * argv)
 
     if (Bstrcmp(SetupFilename, SETUPFILENAME))
         initprintf("Using config file \"%s\".\n", SetupFilename);
-	
-	ScanINIFiles();
+
+    ScanINIFiles();
 
 #ifdef STARTUP_SETUP_WINDOW
     if (readSetup < 0 || (!gNoSetup && (configversion != BYTEVERSION || gSetup.forcesetup)) || gCommandSetup)
@@ -1533,8 +1542,8 @@ int app_main(int argc, char const * const * argv)
             ThrowError("TILES###.ART files not found");
     }
 
-	LoadExtraArts();
-	
+    LoadExtraArts();
+
     levelLoadDefaults();
     const char *defsfile = G_DefFile();
     uint32_t stime = timerGetTicks();
@@ -1620,7 +1629,13 @@ RESTART:
     ready2send = 1;
     while (!gQuitGame)
     {
+        if (handleevents() && quitevent)
+        {
+            KB_KeyDown[sc_Escape] = 1;
+            quitevent = 0;
+        }
         netUpdate();
+        MUSIC_Update();
         CONTROL_BindsEnabled = gInputMode == INPUT_MODE_0;
         switch (gInputMode)
         {
@@ -1668,7 +1683,7 @@ RESTART:
                     timerUpdate();
                     gameUpdate = true;
                 }
-				timerUpdate();
+                timerUpdate();
             }
             if (gameUpdate)
             {
@@ -2265,6 +2280,24 @@ static int parsedefinitions_game(scriptfile *pScript, int firstPass)
     return 0;
 }
 
+int loaddefinitions_game(const char *fileName, int32_t firstPass)
+{
+    scriptfile *pScript = scriptfile_fromfile(fileName);
+
+    if (pScript)
+        parsedefinitions_game(pScript, firstPass);
+
+    for (char const * m : g_defModules)
+        parsedefinitions_game_include(m, NULL, "null", firstPass);
+
+    if (pScript)
+        scriptfile_close(pScript);
+
+    scriptfile_clearsymbols();
+
+    return 0;
+}
+
 INICHAIN *pINIChain;
 INICHAIN const*pINISelected;
 int nINICount = 0;
@@ -2274,29 +2307,32 @@ const char *pzCrypticArts[] = {
 };
 
 INIDESCRIPTION gINIDescription[] = {
-    { "BLOOD: One Unit Whole Blood", "BLOOD.INI", NULL },
+    { "BLOOD: One Unit Whole Blood", "BLOOD.INI", NULL, 0 },
     { "Cryptic passage", "CRYPTIC.INI", pzCrypticArts, ARRAY_SSIZE(pzCrypticArts) },
 };
 
-bool AddINIFile(const char *pzFile)
+bool AddINIFile(const char *pzFile, bool bForce = false)
 {
     char *pzFN;
     struct Bstat st;
-    if (findfrompath(pzFile, &pzFN)) return false; // failed to resolve the filename
-    if (Bstat(pzFN, &st))
-    {
-        Bfree(pzFN);
-        return false;
-    } // failed to stat the file
-    Bfree(pzFN);
     static INICHAIN *pINIIter = NULL;
-    IniFile *pTempIni = new IniFile(pzFile);
-    if (!pTempIni->FindSection("Episode1"))
+    if (!bForce)
     {
+        if (findfrompath(pzFile, &pzFN)) return false; // failed to resolve the filename
+        if (Bstat(pzFN, &st))
+        {
+            Bfree(pzFN);
+            return false;
+        } // failed to stat the file
+        Bfree(pzFN);
+        IniFile *pTempIni = new IniFile(pzFile);
+        if (!pTempIni->FindSection("Episode1"))
+        {
+            delete pTempIni;
+            return false;
+        }
         delete pTempIni;
-        return false;
     }
-    delete pTempIni;
     if (!pINIChain)
         pINIIter = pINIChain = new INICHAIN;
     else
@@ -2321,9 +2357,9 @@ void ScanINIFiles(void)
     CACHE1D_FIND_REC *pINIList = klistpath("/", "*.ini", CACHE1D_FIND_FILE);
     pINIChain = NULL;
 
-    if (bINIOverride)
+    if (bINIOverride || !pINIList)
     {
-        AddINIFile(BloodIniFile);
+        AddINIFile(BloodIniFile, true);
     }
 
     for (auto pIter = pINIList; pIter; pIter = pIter->next)
@@ -2340,24 +2376,6 @@ void ScanINIFiles(void)
             break;
         }
     }
-}
-
-int loaddefinitions_game(const char *fileName, int32_t firstPass)
-{
-    scriptfile *pScript = scriptfile_fromfile(fileName);
-
-    if (pScript)
-        parsedefinitions_game(pScript, firstPass);
-
-    for (char const * m : g_defModules)
-        parsedefinitions_game_include(m, NULL, "null", firstPass);
-
-    if (pScript)
-        scriptfile_close(pScript);
-
-    scriptfile_clearsymbols();
-
-    return 0;
 }
 
 bool LoadArtFile(const char *pzFile)
@@ -2394,4 +2412,16 @@ void LoadExtraArts(void)
     {
         LoadArtFile(pINISelected->pDescription->pzArts[i]);
     }
+}
+
+bool isDemoRecords(void) {
+    return gDemo.at0;
+}
+
+bool isOriginalDemo() {
+    return gDemo.m_bLegacy && gDemo.at1;
+}
+
+bool fileExistsRFF(int id, const char *ext) {
+    return gSysRes.Lookup(id, ext);
 }

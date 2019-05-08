@@ -20,6 +20,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 //-------------------------------------------------------------------------
+
+#include <random>
+#include <iostream>
+
 #include "build.h"
 #include "pragmas.h"
 #include "mmulti.h"
@@ -47,6 +51,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "aitchern.h"
 #include "aizomba.h"
 #include "aizombf.h"
+#include "aiunicult.h"
 #include "blood.h"
 #include "callback.h"
 #include "config.h"
@@ -71,6 +76,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "weapon.h"
 
 VECTORDATA gVectorData[] = {
+    // Tine
     {
         DAMAGE_TYPE_2,
         17,
@@ -80,22 +86,24 @@ VECTORDATA gVectorData[] = {
         0,
         1,
         20480,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        FX_43, FX_5, (FX_ID)-1, 500,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 501,
-        FX_43, FX_6, (FX_ID)-1, 502,
-        FX_43, FX_0, (FX_ID)-1, 503,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, FX_7, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_43, FX_5, FX_NONE, 500,
+        FX_NONE, FX_5, FX_NONE, 501,
+        FX_43, FX_6, FX_NONE, 502,
+        FX_43, FX_0, FX_NONE, 503,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_7, 502,
         FX_43, FX_6, FX_7, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, 503,
-        FX_43, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 503,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, 503,
+        FX_43, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 503,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, -1,
+        1207, 1207,
     },
+    // Shell
     {
         DAMAGE_TYPE_2,
         4,
@@ -105,22 +113,24 @@ VECTORDATA gVectorData[] = {
         0,
         1,
         12288,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        FX_43, FX_5, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 501,
-        FX_43, FX_6, (FX_ID)-1, -1,
-        FX_43, FX_0, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        FX_43, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        FX_43, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_43, FX_5, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, 501,
+        FX_43, FX_6, FX_NONE, -1,
+        FX_43, FX_0, FX_NONE, -1,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_43, FX_6, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_43, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, -1,
+        1001, 1001,
     },
+    // Bullet
     {
         DAMAGE_TYPE_2,
         7,
@@ -130,22 +140,24 @@ VECTORDATA gVectorData[] = {
         0,
         1,
         12288,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
         FX_43, FX_5, FX_7, 510,
-        (FX_ID)-1, FX_5, FX_7, 511,
-        FX_43, FX_6, (FX_ID)-1, 512,
-        FX_43, FX_0, (FX_ID)-1, 513,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, FX_7, 512,
+        FX_NONE, FX_5, FX_7, 511,
+        FX_43, FX_6, FX_NONE, 512,
+        FX_43, FX_0, FX_NONE, 513,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_7, 512,
         FX_43, FX_6, FX_7, 512,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, 513,
-        FX_43, (FX_ID)-1, (FX_ID)-1, 513,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 513,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 513,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 513,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, 513,
+        FX_43, FX_NONE, FX_NONE, 513,
+        FX_NONE, FX_6, FX_NONE, 513,
+        FX_NONE, FX_6, FX_NONE, 513,
+        FX_NONE, FX_6, FX_NONE, 513,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, -1,
+        4001, 4002,
     },
+    // Tommy AP
     {
         DAMAGE_TYPE_2,
         20,
@@ -155,22 +167,24 @@ VECTORDATA gVectorData[] = {
         0,
         1,
         20480,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
         FX_43, FX_5, FX_7, 510,
-        (FX_ID)-1, FX_5, FX_7, 511,
-        FX_43, FX_6, (FX_ID)-1, 512,
-        FX_43, FX_0, (FX_ID)-1, 513,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, FX_7, 512,
+        FX_NONE, FX_5, FX_7, 511,
+        FX_43, FX_6, FX_NONE, 512,
+        FX_43, FX_0, FX_NONE, 513,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_7, 512,
         FX_43, FX_6, FX_7, 512,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, 513,
-        FX_43, (FX_ID)-1, (FX_ID)-1, 513,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 513,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 513,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 513,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, 513,
+        FX_43, FX_NONE, FX_NONE, 513,
+        FX_NONE, FX_6, FX_NONE, 513,
+        FX_NONE, FX_6, FX_NONE, 513,
+        FX_NONE, FX_6, FX_NONE, 513,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, -1,
+        431, 431
     },
+    // Shell AP
     {
         DAMAGE_TYPE_2,
         6,
@@ -180,22 +194,24 @@ VECTORDATA gVectorData[] = {
         0,
         1,
         6144,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        FX_43, FX_5, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 501,
-        FX_43, FX_6, (FX_ID)-1, -1,
-        FX_43, FX_0, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        FX_43, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        FX_43, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_43, FX_5, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, 501,
+        FX_43, FX_6, FX_NONE, -1,
+        FX_43, FX_0, FX_NONE, -1,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_43, FX_6, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_43, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, -1,
+        1002, 1002,
     },
+    // Tommy regular
     {
         DAMAGE_TYPE_2,
         12,
@@ -205,22 +221,24 @@ VECTORDATA gVectorData[] = {
         0,
         1,
         12288,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
         FX_43, FX_5, FX_7, 510,
-        (FX_ID)-1, FX_5, FX_7, 511,
-        FX_43, FX_6, (FX_ID)-1, 512,
-        FX_43, FX_0, (FX_ID)-1, 513,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, FX_7, 512,
+        FX_NONE, FX_5, FX_7, 511,
+        FX_43, FX_6, FX_NONE, 512,
+        FX_43, FX_0, FX_NONE, 513,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_7, 512,
         FX_43, FX_6, FX_7, 512,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, 513,
-        FX_43, (FX_ID)-1, (FX_ID)-1, 513,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 513,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 513,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 513,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, 513,
+        FX_43, FX_NONE, FX_NONE, 513,
+        FX_NONE, FX_6, FX_NONE, 513,
+        FX_NONE, FX_6, FX_NONE, 513,
+        FX_NONE, FX_6, FX_NONE, 513,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, -1,
+        359, 359,
     },
+    // Bat bite
     {
         DAMAGE_TYPE_2,
         4,
@@ -230,22 +248,24 @@ VECTORDATA gVectorData[] = {
         0,
         1,
         4096,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_0, (FX_ID)-1, 503,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_0, FX_NONE, 503,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        521, 521,
     },
+    // Eel bite
     {
         DAMAGE_TYPE_2,
         12,
@@ -255,21 +275,22 @@ VECTORDATA gVectorData[] = {
         0,
         0,
         0,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 500,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 501,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_0, (FX_ID)-1, 503,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, 500,
+        FX_NONE, FX_5, FX_NONE, 501,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_0, FX_NONE, 503,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        513, 513
     },
     {
         DAMAGE_TYPE_2,
@@ -280,22 +301,24 @@ VECTORDATA gVectorData[] = {
         0,
         0,
         0,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 500,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 501,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_0, (FX_ID)-1, 503,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, 500,
+        FX_NONE, FX_5, FX_NONE, 501,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_0, FX_NONE, 503,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        0, 0
     },
+    // Gill bite
     {
         DAMAGE_TYPE_3,
         50,
@@ -305,22 +328,24 @@ VECTORDATA gVectorData[] = {
         0,
         4,
         32768,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 500,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 501,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_0, (FX_ID)-1, 503,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, 500,
+        FX_NONE, FX_5, FX_NONE, 501,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_0, FX_NONE, 503,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        499, 499
     },
+    // Beast slash
     {
         DAMAGE_TYPE_2,
         18,
@@ -330,22 +355,24 @@ VECTORDATA gVectorData[] = {
         0,
         2,
         20480,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 500,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 501,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_0, (FX_ID)-1, 503,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, 500,
+        FX_NONE, FX_5, FX_NONE, 501,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_0, FX_NONE, 503,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, -1,
+        9012, 9014
     },
+    // Axe
     {
         DAMAGE_TYPE_2,
         9,
@@ -355,22 +382,24 @@ VECTORDATA gVectorData[] = {
         0,
         1,
         24576,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 500,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 501,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_0, (FX_ID)-1, 503,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, 500,
+        FX_NONE, FX_5, FX_NONE, 501,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_0, FX_NONE, 503,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, -1,
+        1101, 1101
     },
+    // Cleaver
     {
         DAMAGE_TYPE_2,
         20,
@@ -380,22 +409,24 @@ VECTORDATA gVectorData[] = {
         0,
         3,
         24576,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 500,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 501,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_0, (FX_ID)-1, 503,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, 500,
+        FX_NONE, FX_5, FX_NONE, 501,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_0, FX_NONE, 503,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, -1,
+        1207, 1207
     },
+    // Phantasm slash
     {
         DAMAGE_TYPE_2,
         16,
@@ -405,22 +436,24 @@ VECTORDATA gVectorData[] = {
         0,
         4,
         20480,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 500,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 501,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_0, (FX_ID)-1, 503,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, 500,
+        FX_NONE, FX_5, FX_NONE, 501,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_0, FX_NONE, 503,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, -1,
+        499, 495
     },
+    // Gargoyle Slash
     {
         DAMAGE_TYPE_2,
         19,
@@ -430,22 +463,24 @@ VECTORDATA gVectorData[] = {
         0,
         2,
         24576,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 500,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 501,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_0, (FX_ID)-1, 503,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, 500,
+        FX_NONE, FX_5, FX_NONE, 501,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_0, FX_NONE, 503,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        495, 496
     },
+    // Cerberus bite
     {
         DAMAGE_TYPE_2,
         10,
@@ -455,22 +490,24 @@ VECTORDATA gVectorData[] = {
         0,
         2,
         24576,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 500,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 501,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_0, (FX_ID)-1, 503,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, 500,
+        FX_NONE, FX_5, FX_NONE, 501,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_0, FX_NONE, 503,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        9013, 499
     },
+    // Hound bite
     {
         DAMAGE_TYPE_2,
         4,
@@ -480,22 +517,24 @@ VECTORDATA gVectorData[] = {
         0,
         1,
         24576,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_0, (FX_ID)-1, 503,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_0, FX_NONE, 503,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        1307, 1308
     },
+    // Rat bite
     {
         DAMAGE_TYPE_2,
         8,
@@ -505,22 +544,24 @@ VECTORDATA gVectorData[] = {
         0,
         1,
         24576,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 500,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 501,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_0, (FX_ID)-1, 503,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, 500,
+        FX_NONE, FX_5, FX_NONE, 501,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_0, FX_NONE, 503,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        499, 499
     },
+    // Spider bite
     {
         DAMAGE_TYPE_2,
         9,
@@ -530,22 +571,24 @@ VECTORDATA gVectorData[] = {
         0,
         0,
         0,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 500,
-        (FX_ID)-1, FX_5, (FX_ID)-1, 501,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_0, (FX_ID)-1, 503,
-        (FX_ID)-1, FX_4, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, FX_6, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, 502,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_5, FX_NONE, 500,
+        FX_NONE, FX_5, FX_NONE, 501,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_0, FX_NONE, 503,
+        FX_NONE, FX_4, FX_NONE, -1,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_6, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, 502,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        499, 499
     },
+    // Unk
     {
         (DAMAGE_TYPE)-1,
         0,
@@ -555,22 +598,24 @@ VECTORDATA gVectorData[] = {
         0,
         0,
         0,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_34, FX_35, -1,
-        (FX_ID)-1, FX_34, FX_35, -1,
-        (FX_ID)-1, FX_34, FX_35, -1,
-        (FX_ID)-1, FX_34, FX_35, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, FX_34, FX_35, -1,
-        (FX_ID)-1, FX_34, FX_35, -1,
-        (FX_ID)-1, FX_34, FX_35, -1,
-        (FX_ID)-1, FX_34, FX_35, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_34, FX_35, -1,
+        FX_NONE, FX_34, FX_35, -1,
+        FX_NONE, FX_34, FX_35, -1,
+        FX_NONE, FX_34, FX_35, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_34, FX_35, -1,
+        FX_NONE, FX_34, FX_35, -1,
+        FX_NONE, FX_34, FX_35, -1,
+        FX_NONE, FX_34, FX_35, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        499, 499
     },
+    // Tchernobog burn vector
     {
         DAMAGE_TYPE_1,
         2,
@@ -580,22 +625,24 @@ VECTORDATA gVectorData[] = {
         15,
         0,
         0,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        351, 351
     },
+    // Vodoo 1.0 vector
     {
         DAMAGE_TYPE_5,
         25,
@@ -605,22 +652,51 @@ VECTORDATA gVectorData[] = {
         0,
         0,
         0,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-        (FX_ID)-1, (FX_ID)-1, (FX_ID)-1, -1,
-    }
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        0,0
+    },
+    // 22 kVectorGenDudePunch
+    {
+    DAMAGE_TYPE_0, 
+        37, 
+        874762, 
+        620, 
+        0, 
+        0, 
+        0, 
+        0,
+        FX_NONE, FX_NONE, FX_NONE, -1,
+        FX_NONE, FX_NONE, FX_NONE, 357,
+        FX_NONE, FX_NONE, FX_NONE, 357,
+        FX_NONE, FX_NONE, FX_NONE, 357,
+        FX_NONE, FX_NONE, FX_NONE, 357,
+        FX_NONE, FX_NONE, FX_NONE, 357,
+        FX_NONE, FX_NONE, FX_NONE, 357,
+        FX_NONE, FX_NONE, FX_NONE, 357,
+        FX_NONE, FX_NONE, FX_NONE, 357,
+        FX_NONE, FX_NONE, FX_NONE, 357,
+        FX_NONE, FX_NONE, FX_NONE, 357,
+        FX_NONE, FX_NONE, FX_NONE, 357,
+        FX_NONE, FX_NONE, FX_NONE, 357,
+        FX_NONE, FX_NONE, FX_NONE, 357,
+        FX_NONE, FX_NONE, FX_NONE, 357,
+        0, 0
+        //357, 499,
+    },
 };
 
 ITEMDATA gItemData[] = {
@@ -1426,6 +1502,7 @@ WEAPONITEMDATA gWeaponItemData[] = {
 };
 
 MissileType missileInfo[] = {
+    // Cleaver
     {
         2138,
         978670,
@@ -1433,8 +1510,10 @@ MissileType missileInfo[] = {
         40,
         40,
         (char)-16,
-        16
+        16,
+        1207, 1207
     },
+    // Regular flare
     {
         2424,
         3145728,
@@ -1442,8 +1521,10 @@ MissileType missileInfo[] = {
         32,
         32,
         (char)-128,
-        32
+        32,
+        420, 420
     },
+    // Tesla alt
     {
         3056,
         2796202,
@@ -1451,8 +1532,10 @@ MissileType missileInfo[] = {
         32,
         32,
         (char)-128,
-        32
+        32,
+        471, 471
     },
+    // Flare alt
     {
         2424,
         2446677,
@@ -1460,8 +1543,10 @@ MissileType missileInfo[] = {
         32,
         32,
         (char)-128,
-        4
+        4,
+        421, 421
     },
+    // Spray flame
     {
         0,
         1118481,
@@ -1469,8 +1554,10 @@ MissileType missileInfo[] = {
         24,
         24,
         (char)-128,
-        16
+        16,
+        1309, 351
     },
+    // Fireball
     {
         0,
         1118481,
@@ -1478,8 +1565,10 @@ MissileType missileInfo[] = {
         32,
         32,
         (char)-128,
-        32
+        32,
+        480, 480
     },
+    // Tesla regular
     {
         2130,
         2796202,
@@ -1487,8 +1576,10 @@ MissileType missileInfo[] = {
         32,
         32,
         (char)-128,
-        16
+        16,
+        470, 470
     },
+    // EctoSkull
     {
         870,
         699050,
@@ -1496,8 +1587,10 @@ MissileType missileInfo[] = {
         32,
         32,
         (char)-24,
-        32
+        32,
+        489, 490
     },
+    // Hellhound flame
     {
         0,
         1118481,
@@ -1505,8 +1598,10 @@ MissileType missileInfo[] = {
         24,
         24,
         (char)-128,
-        16
+        16,
+        462, 351
     },
+    // Puke
     {
         0,
         838860,
@@ -1514,8 +1609,10 @@ MissileType missileInfo[] = {
         16,
         16,
         (char)-16,
-        16
+        16,
+        1203, 172
     },
+    // Reserved
     {
         0,
         838860,
@@ -1523,8 +1620,10 @@ MissileType missileInfo[] = {
         8,
         8,
         (char)0,
-        16
+        16,
+        0,0
     },
+    // Stone gargoyle projectile
     {
         3056,
         2097152,
@@ -1532,8 +1631,10 @@ MissileType missileInfo[] = {
         32,
         32,
         (char)-128,
-        16
+        16,
+        1457, 249
     },
+    // Napalm launcher
     {
         0,
         2446677,
@@ -1541,8 +1642,10 @@ MissileType missileInfo[] = {
         30,
         30,
         (char)-128,
-        24
+        24,
+        480, 489
     },
+    // Cerberus fireball
     {
         0,
         2446677,
@@ -1550,8 +1653,10 @@ MissileType missileInfo[] = {
         30,
         30,
         (char)-128,
-        24
+        24,
+        480, 489
     },
+    // Tchernobog fireball
     {
         0,
         1398101,
@@ -1559,8 +1664,10 @@ MissileType missileInfo[] = {
         24,
         24,
         (char)-128,
-        16
+        16,
+        480, 489
     },
+    // Regular life leech
     {
         2446,
         2796202,
@@ -1568,8 +1675,10 @@ MissileType missileInfo[] = {
         32,
         32,
         (char)-128,
-        16
+        16,
+        491, 491
     },
+    // Dropped life leech (enough ammo)
     {
         3056,
         2446677,
@@ -1577,8 +1686,10 @@ MissileType missileInfo[] = {
         16,
         16,
         (char)-128,
-        16
+        16,
+        520, 520
     },
+    // Dropped life leech (no ammo)
     {
         3056,
         1747626,
@@ -1586,11 +1697,13 @@ MissileType missileInfo[] = {
         32,
         32,
         (char)-128,
-        16
+        16,
+        520, 520
     }
 };
 
 THINGINFO thingInfo[] = {
+    //TNT Barrel
     {
         25,
         250,
@@ -1604,8 +1717,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        256, 256, 128, 64, 0, 0, 128
+        256, 256, 128, 64, 0, 0, 128,
+        1
     },
+    // Armed Proxy Dynamite
     {
         5,
         5,
@@ -1619,8 +1734,10 @@ THINGINFO thingInfo[] = {
         0,
         32,
         32,
-        256, 256, 256, 64, 0, 0, 512
+        256, 256, 256, 64, 0, 0, 512,
+        1
     },
+    // Armed Remote Dynamite
     {
         5,
         5,
@@ -1634,8 +1751,10 @@ THINGINFO thingInfo[] = {
         0,
         32,
         32,
-        256, 256, 256, 64, 0, 0, 512
+        256, 256, 256, 64, 0, 0, 512,
+        1
     },
+    // Vase1
     {
         1,
         20,
@@ -1649,8 +1768,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        256, 0, 256, 128, 0, 0, 0
+        256, 0, 256, 128, 0, 0, 0,
+        0
     },
+    // Vase2
     {
         1,
         150,
@@ -1664,8 +1785,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        256, 256, 256, 128, 0, 0, 0
+        256, 256, 256, 128, 0, 0, 0,
+        0
     },
+    // Crate face
     {
         10,
         0,
@@ -1679,8 +1802,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        0, 0, 0, 256, 0, 0, 0
+        0, 0, 0, 256, 0, 0, 0,
+        0
     },
+    // Glass window
     {
         1,
         0,
@@ -1694,8 +1819,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        256, 0, 256, 256, 0, 0, 0
+        256, 0, 256, 256, 0, 0, 0,
+        0,
     },
+    // Flourescent Light
     {
         1,
         0,
@@ -1709,8 +1836,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        256, 0, 256, 256, 0, 0, 512
+        256, 0, 256, 256, 0, 0, 512,
+        0,
     },
+    // Wall Crack
     {
         50,
         0,
@@ -1724,8 +1853,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        0, 0, 0, 256, 0, 0, 0
+        0, 0, 0, 256, 0, 0, 0,
+        0,
     },
+    // Wood Beam
     {
         8,
         0,
@@ -1739,8 +1870,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        256, 0, 256, 128, 0, 0, 0
+        256, 0, 256, 128, 0, 0, 0,
+        0,
     },
+    // Spider's Web
     {
         4,
         0,
@@ -1754,8 +1887,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        256, 256, 64, 256, 0, 0, 128
+        256, 256, 64, 256, 0, 0, 128,
+        0,
     },
+    // Metal Grate
     {
         40,
         0,
@@ -1769,8 +1904,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        64, 0, 128, 256, 0, 0, 0
+        64, 0, 128, 256, 0, 0, 0,
+        0,
     },
+    // Flammable Tree
     {
         1,
         0,
@@ -1784,8 +1921,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        0, 256, 0, 256, 0, 0, 128
+        0, 256, 0, 256, 0, 0, 128,
+        0,
     },
+    // MachineGun Trap
     {
         1000,
         0,
@@ -1799,8 +1938,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        0, 0, 128, 256, 0, 0, 512
+        0, 0, 128, 256, 0, 0, 512,
+        0,
     },
+    // Falling Rock
     {
         0,
         15,
@@ -1814,8 +1955,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0,
+        0,
     },
+    // Kickable Pail
     {
         0,
         8,
@@ -1829,8 +1972,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0,
+        1,
     },
+    // Gib Object
     {
         10,
         2,
@@ -1844,8 +1989,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        256, 0, 256, 256, 0, 0, 128
+        256, 0, 256, 256, 0, 0, 128,
+        0,
     },
+    // Explode Object
     {
         20,
         2,
@@ -1859,8 +2006,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        0, 0, 0, 256, 0, 0, 128
+        0, 0, 0, 256, 0, 0, 128,
+        0,
     },
+    // Armed stick Of TNT
     {
         5,
         14,
@@ -1874,8 +2023,10 @@ THINGINFO thingInfo[] = {
         0,
         32,
         32,
-        64, 256, 128, 64, 0, 0, 256
+        64, 256, 128, 64, 0, 0, 256,
+        1
     },
+    // Armed bundle Of TNT
     {
         5,
         14,
@@ -1889,8 +2040,10 @@ THINGINFO thingInfo[] = {
         0,
         32,
         32,
-        64, 256, 128, 64, 0, 0, 256
+        64, 256, 128, 64, 0, 0, 256,
+        1
     },
+    // Armed aerosol
     {
         5,
         14,
@@ -1904,8 +2057,10 @@ THINGINFO thingInfo[] = {
         0,
         32,
         32,
-        64, 256, 128, 64, 0, 0, 256
+        64, 256, 128, 64, 0, 0, 256,
+        1
     },
+    // Bone (Flesh Garg.)
     {
         5,
         6,
@@ -1919,8 +2074,10 @@ THINGINFO thingInfo[] = {
         0,
         32,
         32,
-        0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0,
+        1
     },
+    // Some alpha stuff
     {
         8,
         3,
@@ -1934,8 +2091,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        256, 0, 256, 256, 0, 0, 0
+        256, 0, 256, 256, 0, 0, 0,
+        0,
     },
+    // WaterDrip 
     {
         0,
         1,
@@ -1949,8 +2108,10 @@ THINGINFO thingInfo[] = {
         10,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0,
+        0
     },
+    // BloodDrip 
     {
         0,
         1,
@@ -1964,8 +2125,10 @@ THINGINFO thingInfo[] = {
         2,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0,
+        0,
     },
+    // Blood chucks1 
     {
         15,
         4,
@@ -1979,8 +2142,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        128, 64, 256, 256, 0, 0, 256
+        128, 64, 256, 256, 0, 0, 256,
+        0,
     },
+    // Blood chucks2
     {
         30,
         30,
@@ -1994,8 +2159,10 @@ THINGINFO thingInfo[] = {
         0,
         0,
         0,
-        128, 64, 256, 256, 0, 0, 64
+        128, 64, 256, 256, 0, 0, 64,
+        0,
     },
+    // Axe Zombie Head 
     {
         60,
         5,
@@ -2009,8 +2176,10 @@ THINGINFO thingInfo[] = {
         0,
         40,
         40,
-        128, 64, 256, 256, 0, 0, 64
+        128, 64, 256, 256, 0, 0, 64,
+        1,
     },
+    // Napalm's Alt Fire explosion
     {
         80,
         30,
@@ -2019,13 +2188,15 @@ THINGINFO thingInfo[] = {
         57344,
         1600,
         256,
-        -1,
+        3281,
         (char)-128,
         0,
         32,
         32,
-        0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0,
+        1,
     },
+    // Fire Pod Explosion
     {
         80,
         30,
@@ -2034,13 +2205,15 @@ THINGINFO thingInfo[] = {
         57344,
         1600,
         256,
-        -1,
+        2020,
         (char)-128,
         0,
         32,
         32,
-        256, 0, 256, 256, 0, 0, 0
+        256, 0, 256, 256, 0, 0, 0,
+        1,
     },
+    // Green Pod Explosion
     {
         80,
         30,
@@ -2049,13 +2222,15 @@ THINGINFO thingInfo[] = {
         57344,
         1600,
         256,
-        -1,
+        1860,
         (char)-128,
         0,
         32,
         32,
-        256, 0, 256, 256, 0, 0, 0
+        256, 0, 256, 256, 0, 0, 0,
+        1,
     },
+    // Life Leech
     {
         150,
         30,
@@ -2069,8 +2244,10 @@ THINGINFO thingInfo[] = {
         0,
         48,
         48,
-        64, 64, 112, 64, 0, 96, 96
+        64, 64, 112, 64, 0, 96, 96,
+        1,
     },
+    // Voodoo Head
     {
         1,
         30,
@@ -2084,8 +2261,43 @@ THINGINFO thingInfo[] = {
         0,
         16,
         16,
-        0, 0, 0, 0, 0, 0, 0
-    }
+        0, 0, 0, 0, 0, 0, 0,
+        1,
+    },
+    // 433 - kGDXThingTNTProx
+    {
+        5,
+        5,
+        16,
+        3,
+        24576,
+        1600,
+        256,
+        3444,
+        (char)-16,
+        7,
+        32,
+        32,
+        256, 256, 256, 64, 0, 0, 512,
+        1
+    },
+    // 433 - kGDXThingThrowableRock
+    {
+        5,
+        6,
+        16,
+        3,
+        32768,
+        1600,
+        256,
+        1462,
+        (char)0,
+        0,
+        32,
+        32,
+        0, 0, 0, 0, 0, 0, 0,
+        1
+    },
 };
 
 EXPLOSION explodeInfo[] = {
@@ -2234,7 +2446,7 @@ bool IsAmmoSprite(spritetype *pSprite)
 bool IsUnderwaterSector(int nSector)
 {
     int nXSector = sector[nSector].extra;
-    if (nXSector > 0 && xsector[nXSector].at13_4)
+    if (nXSector > 0 && xsector[nXSector].Underwater)
         return 1;
     return 0;
 }
@@ -2302,8 +2514,26 @@ void actInit(void)
     for (int nSprite = headspritestat[3]; nSprite >= 0; nSprite = nextspritestat[nSprite])
     {
         spritetype *pSprite = &sprite[nSprite];
-        if (pSprite->type == 44)
+        if (pSprite->type == 44) // Voodoo doll (ammo)
+            pSprite->type = 70; // Voodoo doll (weapon)
+
+        switch (pSprite->type) {
+        case 44:
             pSprite->type = 70;
+            break;
+        
+        // By NoOne: add Random pickup feature
+        case 40: // Random weapon
+        case 80: // Random ammo
+
+            // Make sprites invisible and non-blocking
+            pSprite->cstat &= ~kSprBlock;
+            pSprite->cstat |= kSprInvisible;
+
+            if (pSprite->extra > 0 && xsprite[pSprite->extra].state == 1)
+                trTriggerSprite(nSprite, &xsprite[pSprite->extra], COMMAND_ID_0);
+            break;
+        }
     }
     for (int nSprite = headspritestat[11]; nSprite >= 0; nSprite = nextspritestat[nSprite])
     {
@@ -2314,8 +2544,8 @@ void actInit(void)
             pXSprite = &xsprite[nXSprite];
         if (pSprite->type == 459)
         {
-            pXSprite->at1_6 = 0;
-            pXSprite->at9_4 = ClipLow(pXSprite->at9_4, 1);
+            pXSprite->state = 0;
+            pXSprite->waitTime = ClipLow(pXSprite->waitTime, 1);
             pSprite->cstat &= ~1;
             pSprite->cstat |= 32768;
         }
@@ -2338,7 +2568,8 @@ void actInit(void)
         {
         case 401:
         case 413:
-            pXSprite->at1_6 = 0;
+        case kGDXThingTNTProx:
+            pXSprite->state = 0;
             break;
         case 426:
         {
@@ -2353,7 +2584,7 @@ void actInit(void)
             break;
         }
         default:
-            pXSprite->at1_6 = 1;
+            pXSprite->state = 1;
             break;
         }
     }
@@ -2367,8 +2598,8 @@ void actInit(void)
             dassert(nXSprite > 0 && nXSprite < kMaxXSprites);
             XSPRITE *pXSprite = &xsprite[nXSprite];
             // Drop Key
-            if (pXSprite->atd_3 > 0)
-                actDropObject(pSprite, 99 + pXSprite->atd_3);
+            if (pXSprite->key > 0)
+                actDropObject(pSprite, 99 + pXSprite->key);
             DeleteSprite(headspritestat[6]);
         }
     }
@@ -2386,7 +2617,7 @@ void actInit(void)
         gKillMgr.sub_2641C();
         for (int i = 0; i < kDudeMax-kDudeBase; i++)
             for (int j = 0; j < 7; j++)
-                dudeInfo[i].at70[j] = mulscale8(DudeDifficulty[gGameOptions.nDifficulty], dudeInfo[i].at54[j]);
+                dudeInfo[i].at70[j] = mulscale8(DudeDifficulty[gGameOptions.nDifficulty], dudeInfo[i].startDamage[j]);
         for (int nSprite = headspritestat[6]; nSprite >= 0; nSprite = nextspritestat[nSprite])
         {
             spritetype *pSprite = &sprite[nSprite];
@@ -2397,12 +2628,48 @@ void actInit(void)
             if (!IsPlayerSprite(pSprite))
             {
                 pSprite->cstat |= 4096+256+1;
-                pSprite->clipdist = dudeInfo[nType].ata;
+                pSprite->clipdist = dudeInfo[nType].clipdist;
                 xvel[nSprite] = yvel[nSprite] = zvel[nSprite] = 0;
-                pXSprite->health = dudeInfo[nType].at2<<4;
+                
+                // By NoOne: add a way to set custom hp for every enemy - should work only if map just started and not loaded.
+                if (pXSprite->data4 <= 0) pXSprite->health = dudeInfo[nType].startHealth << 4;
+                else pXSprite->health = pXSprite->data4;
             }
-            if (gSysRes.Lookup(dudeInfo[nType].seqStartID, "SEQ"))
-                seqSpawn(dudeInfo[nType].seqStartID, 3, nXSprite);
+
+            int seqStartId = dudeInfo[nType].seqStartID;
+            // By NoOne: store seqStartId in data2 field for custom dude
+            if (pSprite->type == kGDXDudeUniversalCultist) {
+                
+                if (pXSprite->data2 > 0) {
+                    seqStartId = pXSprite->data2;
+                    int seqEndId = pXSprite->data2 + 19;
+
+                    // check for full set of animations
+                    for (int i = seqStartId; i <= seqEndId; i++) {
+
+                        // exceptions
+                        switch (i - seqStartId) {
+                            case 11:
+                            case 12:
+                            case 18:
+                            case 19:
+                                continue;
+                        }
+
+                        if (!gSysRes.Lookup(i, "SEQ")) {
+                            //ThrowError("No SEQ file with ID " + i + " found for custom dude #" + pSprite->xvel + "!\nData2 (SEQ Base): " + pXSprite->data2 + "\nSwitching to default animation!");
+                            pXSprite->data2 = dudeInfo[nType].seqStartID;
+                            seqStartId = pXSprite->data2;
+                            break;
+                        }
+                    }
+
+                } else {
+                    pXSprite->data2 = seqStartId;
+                }
+            }
+            
+            if (gSysRes.Lookup(seqStartId, "SEQ")) seqSpawn(seqStartId, 3, nXSprite);
         }
         aiInit();
     }
@@ -2421,11 +2688,11 @@ void ConcussSprite(int a1, spritetype *pSprite, int x, int y, int z, int a6)
     {
         int mass = 0;
         if (pSprite->type >= kDudeBase && pSprite->type < kDudeMax)
-            mass = dudeInfo[pSprite->type-kDudeBase].at4;
-        else if (pSprite->type >= 400 && pSprite->type < 433)
+            mass = dudeInfo[pSprite->type-kDudeBase].mass;
+        else if (pSprite->type >= kThingBase && pSprite->type < kThingMax)
             mass = thingInfo[pSprite->type-400].at2;
         else
-            ThrowError("Unexpected type in ConcussSprite(): Sprite: %d  Type: %d  Stat: %d", pSprite->index, pSprite->type, pSprite->statnum);
+            ThrowError("Unexpected type in ConcussSprite(): Sprite: %d  Type: %d  Stat: %d", (int)pSprite->index, (int)pSprite->type, (int)pSprite->statnum);
         int size = (tilesiz[pSprite->picnum].x*pSprite->xrepeat*tilesiz[pSprite->picnum].y*pSprite->yrepeat)>>1;
         dassert(mass > 0);
 
@@ -2534,7 +2801,7 @@ void sub_2A620(int nSprite, int x, int y, int z, int nSector, int nDist, int a7,
             if (!CheckProximity(pSprite2, x, y, z, nSector, nDist))
                 continue;
             XSPRITE *pXSprite2 = &xsprite[pSprite2->extra];
-            if (pXSprite2->at17_5)
+            if (pXSprite2->locked)
                 continue;
             int dx = klabs(x-pSprite2->x);
             int dy = klabs(y-pSprite2->y);
@@ -2562,12 +2829,12 @@ void sub_2AA94(spritetype *pSprite, XSPRITE *pXSprite)
         pSprite->cstat |= 4;
     sfxPlay3DSound(pSprite, 303, 24+(pSprite->hitag&3), 1);
     sub_2A620(nSprite, pSprite->x, pSprite->y, pSprite->z, pSprite->sectnum, 128, 0, 60, DAMAGE_TYPE_3, 15, 120, 0, 0);
-    if (pXSprite->at18_2 > 1)
+    if (pXSprite->data4 > 1)
     {
         GibSprite(pSprite, GIBTYPE_5, NULL, NULL);
         int v14[2];
-        v14[0] = pXSprite->at18_2>>1;
-        v14[1] = pXSprite->at18_2-v14[0];
+        v14[0] = pXSprite->data4>>1;
+        v14[1] = pXSprite->data4-v14[0];
         int v4 = pSprite->ang;
         xvel[pSprite->index] = 0;
         yvel[pSprite->index] = 0;
@@ -2581,7 +2848,7 @@ void sub_2AA94(spritetype *pSprite, XSPRITE *pXSprite)
             XSPRITE *pXSprite2 = &xsprite[pSprite2->extra];
             pSprite2->owner = pSprite->owner;
             seqSpawn(61, 3, pSprite2->extra, nNapalmClient);
-            pXSprite2->at18_2 = v14[i];
+            pXSprite2->data4 = v14[i];
         }
     }
 }
@@ -2657,7 +2924,7 @@ spritetype *actDropKey(spritetype *pSprite, int nType)
         {
             if (pSprite2->extra == -1)
                 dbInsertXSprite(pSprite2->index);
-            xsprite[pSprite2->extra].at18_0 = 3;
+            xsprite[pSprite2->extra].respawn = 3;
             gSpriteHit[pSprite2->extra].florhit = 0;
             gSpriteHit[pSprite2->extra].ceilhit = 0;
         }
@@ -2728,6 +2995,56 @@ void actKillDude(int a1, spritetype *pSprite, DAMAGE_TYPE a3, int a4)
     XSPRITE *pXSprite = &xsprite[pSprite->extra];
     switch (pSprite->type)
     {
+    case kGDXDudeUniversalCultist:
+    {
+        removeDudeStuff(pSprite);
+        XSPRITE* pXIncarnation = getNextIncarnation(pXSprite);
+        if (pXIncarnation == NULL) {
+            if (a3 == DAMAGE_TYPE_1) {
+                if (pXSprite->medium == 0) {
+                    pSprite->type = kGDXGenDudeBurning;
+                    aiNewState(pSprite, pXSprite, &GDXGenDudeBurnGoto);
+                    actHealDude(pXSprite, dudeInfo[55].startHealth, dudeInfo[55].startHealth);
+                    if (pXSprite->burnTime <= 0) pXSprite->burnTime = 1200;
+                    gDudeExtra[pSprite->extra].at0 = gFrameClock + 360;
+                    return;
+                }
+                else a3 = DAMAGE_TYPE_0;
+            }
+        } else {
+            int seqId = pXSprite->data2 + 18;
+            if (!gSysRes.Lookup(seqId, "SEQ")) {
+                seqKill(3, nXSprite);
+                sfxPlayGDXGenDudeSound(pSprite, 10, pXSprite->data3);
+                spritetype* pEffect = gFX.fxSpawn((FX_ID)52, pSprite->sectnum, pSprite->x, pSprite->y, pSprite->z, pSprite->ang);
+                if (pEffect != NULL) {
+                    pEffect->cstat = kSprFace;
+                    pEffect->pal = 6;
+                    pEffect->xrepeat = pSprite->xrepeat;
+                    pEffect->yrepeat = pSprite->yrepeat;
+                }
+                
+                GIBTYPE nGibType;
+                for (int i = 0; i < 3; i++) {
+                    if (Chance(0x3000)) nGibType = GIBTYPE_6;
+                    else if (Chance(0x2000)) nGibType = GIBTYPE_5;
+                    else nGibType = GIBTYPE_17;
+
+                    int top, bottom;
+                    GetSpriteExtents(pSprite, &top, &bottom);
+                    CGibPosition gibPos(pSprite->x, pSprite->y, top);
+                    CGibVelocity gibVel(xvel[pSprite->index] >> 1, yvel[pSprite->index] >> 1, -0xccccc);
+                    GibSprite(pSprite, nGibType, &gibPos, &gibVel);
+                }
+
+                return;
+            }
+            seqSpawn(seqId, 3, nXSprite, -1);
+            sfxPlayGDXGenDudeSound(pSprite, 10, pXSprite->data3);
+            return;
+        }
+        break;
+    }
     case 227: // Cerberus
         seqSpawn(dudeInfo[nType].seqStartID+1, 3, nXSprite, -1);
         return;
@@ -2735,31 +3052,31 @@ void actKillDude(int a1, spritetype *pSprite, DAMAGE_TYPE a3, int a4)
     case 202:
     case 247:
     case 248:
-        if (a3 == DAMAGE_TYPE_1 && pXSprite->at17_6 == 0)
+        if (a3 == DAMAGE_TYPE_1 && pXSprite->medium == 0)
         {
             pSprite->type = 240;
             aiNewState(pSprite, pXSprite, &cultistBurnGoto);
-            actHealDude(pXSprite, dudeInfo[40].at2, dudeInfo[40].at2);
+            actHealDude(pXSprite, dudeInfo[40].startHealth, dudeInfo[40].startHealth);
             return;
         }
         // no break
         fallthrough__;
     case 251:
-        if (a3 == DAMAGE_TYPE_1 && pXSprite->at17_6 == 0)
+        if (a3 == DAMAGE_TYPE_1 && pXSprite->medium == 0)
         {
             pSprite->type = 253;
             aiNewState(pSprite, pXSprite, &beastBurnGoto);
-            actHealDude(pXSprite, dudeInfo[53].at2, dudeInfo[53].at2);
+            actHealDude(pXSprite, dudeInfo[53].startHealth, dudeInfo[53].startHealth);
             return;
         }
         // no break
         fallthrough__;
     case 245:
-        if (a3 == DAMAGE_TYPE_1 && pXSprite->at17_6 == 0)
+        if (a3 == DAMAGE_TYPE_1 && pXSprite->medium == 0)
         {
             pSprite->type = 239;
             aiNewState(pSprite, pXSprite, &innocentBurnGoto);
-            actHealDude(pXSprite, dudeInfo[39].at2, dudeInfo[39].at2);
+            actHealDude(pXSprite, dudeInfo[39].startHealth, dudeInfo[39].startHealth);
             return;
         }
         break;
@@ -2779,10 +3096,10 @@ void actKillDude(int a1, spritetype *pSprite, DAMAGE_TYPE a3, int a4)
             pPlayer->at2c6++;
     }
 
-    if (pXSprite->atd_3 > 0)
-        actDropObject(pSprite, 100+pXSprite->atd_3-1);
-    if (pXSprite->atc_0 > 0)
-        actDropObject(pSprite, pXSprite->atc_0);
+    if (pXSprite->key > 0)
+        actDropObject(pSprite, 100+pXSprite->key-1);
+    if (pXSprite->dropMsg > 0)
+        actDropObject(pSprite, pXSprite->dropMsg);
     if (pSprite->type == 201)
     {
         int nRand = Random(100);
@@ -2806,6 +3123,10 @@ void actKillDude(int a1, spritetype *pSprite, DAMAGE_TYPE a3, int a4)
         nSeq = 2;
         switch (pSprite->type)
         {
+        case kGDXDudeUniversalCultist:
+        case kGDXGenDudeBurning:
+            sfxPlayGDXGenDudeSound(pSprite, 4, pXSprite->data3);
+            break;
         case 201:
         case 202:
         case 230:
@@ -2884,8 +3205,8 @@ void actKillDude(int a1, spritetype *pSprite, DAMAGE_TYPE a3, int a4)
             seqSpawn(dudeInfo[nType].seqStartID+7, 3, nXSprite, nDudeToGibClient1);
             evPost(pSprite->index, 3, 0, CALLBACK_ID_5);
             sfxPlay3DSound(pSprite, 362, -1, 0);
-            pXSprite->at10_0 = 35;
-            pXSprite->at12_0 = 5;
+            pXSprite->data1 = 35;
+            pXSprite->data2 = 5;
             int top, bottom;
             GetSpriteExtents(pSprite, &top, &bottom);
             CGibPosition gibPos(pSprite->x, pSprite->y, top);
@@ -2924,6 +3245,41 @@ void actKillDude(int a1, spritetype *pSprite, DAMAGE_TYPE a3, int a4)
         else
             seqSpawn(dudeInfo[nType].seqStartID+15, 3, nXSprite, nDudeToGibClient2);
         break;
+    case kGDXDudeUniversalCultist:
+        sfxPlayGDXGenDudeSound(pSprite, 2, pXSprite->data3);
+        if (nSeq == 3)
+            seqSpawn(nSeq + pXSprite->data2, 3, nXSprite, nDudeToGibClient2);
+        else
+            seqSpawn(nSeq + pXSprite->data2, 3, nXSprite, nDudeToGibClient1);
+
+        pXSprite->txID = 0; // to avoid second trigger.
+        break;
+    case kGDXGenDudeBurning:
+    {
+        sfxPlayGDXGenDudeSound(pSprite, 4, pXSprite->data3);
+        a3 = DAMAGE_TYPE_3;
+
+        if (Chance(0x4000)) {
+            int top, bottom;
+            GetSpriteExtents(pSprite, &top, &bottom);
+            CGibPosition gibPos(pSprite->x, pSprite->y, top);
+            CGibVelocity gibVel(xvel[pSprite->index] >> 1, yvel[pSprite->index] >> 1, -0xccccc);
+            GibSprite(pSprite, GIBTYPE_7, &gibPos, &gibVel);
+        }
+
+        int seqId = pXSprite->data2;
+        bool dBurn1 = gSysRes.Lookup(seqId + 15, "SEQ"); bool dBurn2 = gSysRes.Lookup(seqId + 16, "SEQ");
+        if (dBurn1 && dBurn2) seqId += 15 + Random(2);
+        else if (dBurn1) seqId +=15;
+        else if (dBurn2) seqId +=16;
+        else { 
+            seqKill(3, nXSprite); 
+            break; 
+        }
+        
+        seqSpawn(seqId, 3, nXSprite, nDudeToGibClient1);
+        break;
+    }
     case 241:
         if (Chance(0x8000) && nSeq == 3)
             sfxPlay3DSound(pSprite, 1109, -1, 0);
@@ -3149,8 +3505,8 @@ void actKillDude(int a1, spritetype *pSprite, DAMAGE_TYPE a3, int a4)
     {
         DUDEINFO *pDudeInfo = &dudeInfo[pSprite->type-kDudeBase];
         for (int i = 0; i < 3; i++)
-            if (pDudeInfo->at48[i] > -1)
-                GibSprite(pSprite, (GIBTYPE)pDudeInfo->at48[i], NULL, NULL);
+            if (pDudeInfo->nGibType[i] > -1)
+                GibSprite(pSprite, (GIBTYPE)pDudeInfo->nGibType[i], NULL, NULL);
         for (int i = 0; i < 4; i++)
             fxSpawnBlood(pSprite, a4);
     }
@@ -3171,7 +3527,7 @@ int actDamageSprite(int nSource, spritetype *pSprite, DAMAGE_TYPE a3, int a4)
     dassert(nXSprite > 0 && nXSprite < kMaxXSprites);
     XSPRITE *pXSprite = &xsprite[nXSprite];
     dassert(pXSprite->reference == pSprite->index);
-    if ((pXSprite->health == 0 && pSprite->statnum != 6) || pXSprite->at17_5)
+    if ((pXSprite->health == 0 && pSprite->statnum != 6) || pXSprite->locked)
         return 0;
     if (nSource == -1)
         nSource = pSprite->index;
@@ -3228,13 +3584,16 @@ int actDamageSprite(int nSource, spritetype *pSprite, DAMAGE_TYPE a3, int a4)
             if (pSprite->type == 431)
             {
                 GibSprite(pSprite, GIBTYPE_14, NULL, NULL);
-                pXSprite->at10_0 = 0;
-                pXSprite->at12_0 = 0;
-                pXSprite->at14_0 = 0;
-                pXSprite->at32_0 = 0;
-                pXSprite->at18_2 = 0;
-                pXSprite->atd_2 = 0;
-                pXSprite->atf_7 = 0;
+                pXSprite->data1 = 0;
+                pXSprite->data2 = 0;
+                pXSprite->data3 = 0;
+                pXSprite->stateTimer = 0;
+                pXSprite->data4 = 0;
+                pXSprite->isTriggered = 0;
+                pXSprite->DudeLockout = 0;
+
+                if (pSprite->owner >= 0 && sprite[pSprite->owner].type == kGDXDudeUniversalCultist)
+                    sprite[pSprite->owner].owner = kMaxSprites; // By NoOne: indicates if custom dude had life leech.
             }
             else if (!(pSprite->hitag&16))
                 actPropagateSpriteOwner(pSprite, &sprite[nSource]);
@@ -3267,7 +3626,7 @@ int actDamageSprite(int nSource, spritetype *pSprite, DAMAGE_TYPE a3, int a4)
                 GibSprite(pSprite, GIBTYPE_4, NULL, NULL);
                 break;
             case 412:
-                switch (pXSprite->at10_0)
+                switch (pXSprite->data1)
                 {
                 case -1:
                     GibSprite(pSprite, GIBTYPE_14, NULL, NULL);
@@ -3465,7 +3824,7 @@ void actImpactMissile(spritetype *pMissile, int a2)
     case 312:
         if (a2 == 3 && pSpriteHit && (pThingInfo || pDudeInfo))
         {
-            if (pThingInfo && pSpriteHit->type == 400 && pXSpriteHit->at2c_0 == 0)
+            if (pThingInfo && pSpriteHit->type == 400 && pXSpriteHit->burnTime == 0)
                 evPost(nSpriteHit, 3, 0, CALLBACK_ID_0);
             int nOwner = actSpriteOwnerToSpriteId(pMissile);
             int nDamage = (50+Random(50))<<4;
@@ -3486,7 +3845,7 @@ void actImpactMissile(spritetype *pMissile, int a2)
                 int nOwner = actSpriteOwnerToSpriteId(pMissile);
                 if ((pThingInfo && pThingInfo->at17[DAMAGE_TYPE_1] != 0) || (pDudeInfo && pDudeInfo->at70[DAMAGE_TYPE_1] != 0))
                 {
-                    if (pThingInfo && pSpriteHit->type == 400 && pXSpriteHit->at2c_0 == 0)
+                    if (pThingInfo && pSpriteHit->type == 400 && pXSpriteHit->burnTime == 0)
                         evPost(nSpriteHit, 3, 0, CALLBACK_ID_0);
                     actBurnSprite(pMissile->owner, pXSpriteHit, 480);
                     sub_2A620(nOwner, pMissile->x, pMissile->y, pMissile->z, pMissile->sectnum, 16, 20, 10, DAMAGE_TYPE_2, 6, 480, 0, 0);
@@ -3500,9 +3859,9 @@ void actImpactMissile(spritetype *pMissile, int a2)
                 {
                     pMissile->picnum = 2123;
                     pXMissile->target = nSpriteHit;
-                    pXMissile->at28_0 = pMissile->z-pSpriteHit->z;
-                    pXMissile->at16_0 = getangle(pMissile->x-pSpriteHit->x, pMissile->y-pSpriteHit->y)-pSpriteHit->ang;
-                    pXMissile->at1_6 = 1;
+                    pXMissile->targetZ = pMissile->z-pSpriteHit->z;
+                    pXMissile->goalAng = getangle(pMissile->x-pSpriteHit->x, pMissile->y-pSpriteHit->y)-pSpriteHit->ang;
+                    pXMissile->state = 1;
                     actPostSprite(pMissile->index, 14);
                     pMissile->cstat &= ~257;
                     break;
@@ -3522,7 +3881,7 @@ void actImpactMissile(spritetype *pMissile, int a2)
             if (pObject->extra > 0)
             {
                 XSPRITE *pXObject = &xsprite[pObject->extra];
-                if ((pObject->statnum == 4 || pObject->statnum == 6) && pXObject->at2c_0 == 0)
+                if ((pObject->statnum == 4 || pObject->statnum == 6) && pXObject->burnTime == 0)
                     evPost(nObject, 3, 0, CALLBACK_ID_0);
                 int nOwner = actSpriteOwnerToSpriteId(pMissile);
                 actBurnSprite(pMissile->owner, pXObject, (4+gGameOptions.nDifficulty)<<2);
@@ -3540,7 +3899,7 @@ void actImpactMissile(spritetype *pMissile, int a2)
             if (pObject->extra > 0)
             {
                 XSPRITE *pXObject = &xsprite[pObject->extra];
-                if ((pObject->statnum == 4 || pObject->statnum == 6) && pXObject->at2c_0 == 0)
+                if ((pObject->statnum == 4 || pObject->statnum == 6) && pXObject->burnTime == 0)
                     evPost(nObject, 3, 0, CALLBACK_ID_0);
                 int nOwner = actSpriteOwnerToSpriteId(pMissile);
                 actBurnSprite(pMissile->owner, pXObject, (4+gGameOptions.nDifficulty)<<2);
@@ -3561,7 +3920,7 @@ void actImpactMissile(spritetype *pMissile, int a2)
             if (pObject->extra > 0)
             {
                 XSPRITE *pXObject = &xsprite[pObject->extra];
-                if ((pObject->statnum == 4 || pObject->statnum == 6) && pXObject->at2c_0 == 0)
+                if ((pObject->statnum == 4 || pObject->statnum == 6) && pXObject->burnTime == 0)
                     evPost(nObject, 3, 0, CALLBACK_ID_0);
                 int nOwner = actSpriteOwnerToSpriteId(pMissile);
                 actBurnSprite(pMissile->owner, pXObject, 32);
@@ -3609,7 +3968,7 @@ void actImpactMissile(spritetype *pMissile, int a2)
                 XSPRITE *pXOwner = &xsprite[pOwner->extra];
                 int nType = pOwner->type-kDudeBase;
                 if (pXOwner->health > 0)
-                    actHealDude(pXOwner, 10, dudeInfo[nType].at2);
+                    actHealDude(pXOwner, 10, dudeInfo[nType].startHealth);
             }
         }
         break;
@@ -3668,16 +4027,16 @@ void actTouchFloor(spritetype *pSprite, int nSector)
     if (pSector->extra > 0)
         pXSector = &xsector[pSector->extra];
 
-    if (pXSector && (pSector->lotag == 618 || pXSector->at33_1 > 0))
+    if (pXSector && (pSector->lotag == 618 || pXSector->damageType > 0))
     {
         DAMAGE_TYPE nDamageType;
         if (pSector->lotag == 618)
-            nDamageType = (DAMAGE_TYPE)ClipRange(pXSector->at33_1, DAMAGE_TYPE_0, DAMAGE_TYPE_6);
+            nDamageType = (DAMAGE_TYPE)ClipRange(pXSector->damageType, DAMAGE_TYPE_0, DAMAGE_TYPE_6);
         else
-            nDamageType = (DAMAGE_TYPE)ClipRange(pXSector->at33_1-1, DAMAGE_TYPE_0, DAMAGE_TYPE_6);
+            nDamageType = (DAMAGE_TYPE)ClipRange(pXSector->damageType-1, DAMAGE_TYPE_0, DAMAGE_TYPE_6);
         int nDamage;
-        if (pXSector->at4_0)
-            nDamage = ClipRange(pXSector->at4_0, 0, 1000);
+        if (pXSector->data)
+            nDamage = ClipRange(pXSector->data, 0, 1000);
         else
             nDamage = 1000;
         actDamageSprite(pSprite->index, pSprite, nDamageType, scale(4, nDamage, 120)<<4);
@@ -3733,10 +4092,10 @@ void ProcessTouchObjects(spritetype *pSprite, int nXSprite)
             }
             if (pSprite2->type == 454)
             {
-                if (pXSprite2->at1_6)
+                if (pXSprite2->state)
                 {
-                    pXSprite2->at10_0 = 1;
-                    pXSprite2->at12_0 = ClipHigh(pXSprite2->at12_0+8, 600);
+                    pXSprite2->data1 = 1;
+                    pXSprite2->data2 = ClipHigh(pXSprite2->data2+8, 600);
                     actDamageSprite(nSprite, pSprite, DAMAGE_TYPE_2, 16);
                 }
                 else
@@ -3770,8 +4129,8 @@ void ProcessTouchObjects(spritetype *pSprite, int nXSprite)
             case 241:
             case 242:
                 // This does not make sense
-                pXSprite->at2c_0 = ClipLow(pXSprite->at2c_0-4, 0);
-                actDamageSprite(actOwnerIdToSpriteId(pXSprite->at2e_0), pSprite, DAMAGE_TYPE_1, 8);
+                pXSprite->burnTime = ClipLow(pXSprite->burnTime-4, 0);
+                actDamageSprite(actOwnerIdToSpriteId(pXSprite->burnSource), pSprite, DAMAGE_TYPE_1, 8);
                 break;
             }
         }
@@ -3815,10 +4174,10 @@ void ProcessTouchObjects(spritetype *pSprite, int nXSprite)
                 actDamageSprite(-1, pSprite2, DAMAGE_TYPE_0, 80);
                 break;
             case 454:
-                if (pXSprite2->at1_6)
+                if (pXSprite2->state)
                 {
-                    pXSprite2->at10_0 = 1;
-                    pXSprite2->at12_0 = ClipHigh(pXSprite2->at12_0+8, 600);
+                    pXSprite2->data1 = 1;
+                    pXSprite2->data2 = ClipHigh(pXSprite2->data2+8, 600);
                     actDamageSprite(nSprite, pSprite, DAMAGE_TYPE_2, 16);
                 }
                 else
@@ -3878,13 +4237,13 @@ void actAirDrag(spritetype *pSprite, int a2)
     {
         dassert(nXSector < kMaxXSectors);
         XSECTOR *pXSector = &xsector[nXSector];
-        if (pXSector->at35_1 && (pXSector->at37_6 || pXSector->at1_7))
+        if (pXSector->windVel && (pXSector->windAlways || pXSector->busy))
         {
-            int vcx = pXSector->at35_1<<12;
-            if (!pXSector->at37_6 && pXSector->at1_7)
-                vcx = mulscale16(vcx, pXSector->at1_7);
-            vbp = mulscale30(vcx, Cos(pXSector->at36_3));
-            v4 = mulscale30(vcx, Sin(pXSector->at36_3));
+            int vcx = pXSector->windVel<<12;
+            if (!pXSector->windAlways && pXSector->busy)
+                vcx = mulscale16(vcx, pXSector->busy);
+            vbp = mulscale30(vcx, Cos(pXSector->windAng));
+            v4 = mulscale30(vcx, Sin(pXSector->windAng));
         }
     }
     xvel[pSprite->index] += mulscale16(vbp-xvel[pSprite->index], a2);
@@ -4137,9 +4496,9 @@ void MoveDude(spritetype *pSprite)
                 actImpactMissile(pHitSprite, 3);
                 gHitInfo = hitInfo;
             }
-            if (pHitXSprite && pHitXSprite->ate_2 && !pHitXSprite->at1_6 && !pHitXSprite->atd_2)
+            if (pHitXSprite && pHitXSprite->Touch && !pHitXSprite->state && !pHitXSprite->isTriggered)
                 trTriggerSprite(nHitSprite, pHitXSprite, 33);
-            if (pDudeInfo->at37 && pHitXSprite && pHitXSprite->atd_6 && !pHitXSprite->atd_3 && !pHitXSprite->atf_7 && !pHitXSprite->at1_6 && !pHitXSprite->at1_7 && !pPlayer)
+            if (pDudeInfo->lockOut && pHitXSprite && pHitXSprite->Push && !pHitXSprite->key && !pHitXSprite->DudeLockout && !pHitXSprite->state && !pHitXSprite->busy && !pPlayer)
                 trTriggerSprite(nHitSprite, pHitXSprite, 30);
             break;
         }
@@ -4150,7 +4509,7 @@ void MoveDude(spritetype *pSprite)
             XWALL *pHitXWall = NULL;
             if (pHitWall->extra > 0)
                 pHitXWall = &xwall[pHitWall->extra];
-            if (pDudeInfo->at37 && pHitXWall && pHitXWall->at10_5 && !pHitXWall->at10_2 && !pHitXWall->at13_3 && !pHitXWall->at1_6 && !pHitXWall->at1_7 && !pPlayer)
+            if (pDudeInfo->lockOut && pHitXWall && pHitXWall->triggerPush && !pHitXWall->key && !pHitXWall->dudeLockout && !pHitXWall->state && !pHitXWall->busy && !pPlayer)
                 trTriggerWall(nHitWall, pHitXWall, 50);
             if (pHitWall->nextsector != -1)
             {
@@ -4158,7 +4517,7 @@ void MoveDude(spritetype *pSprite)
                 XSECTOR *pHitXSector = NULL;
                 if (pHitSector->extra > 0)
                     pHitXSector = &xsector[pHitSector->extra];
-                if (pDudeInfo->at37 && pHitXSector && pHitXSector->at17_7 && !pHitXSector->at16_7 && !pHitXSector->at37_7 && !pHitXSector->at1_6 && !pHitXSector->at1_7 && !pPlayer)
+                if (pDudeInfo->lockOut && pHitXSector && pHitXSector->Wallpush && !pHitXSector->Key && !pHitXSector->at37_7 && !pHitXSector->state && !pHitXSector->busy && !pPlayer)
                     trTriggerSector(pHitWall->nextsector, pHitXSector, 40);
                 if (top < pHitSector->ceilingz || bottom > pHitSector->floorz)
                 {
@@ -4184,7 +4543,7 @@ void MoveDude(spritetype *pSprite)
             pXSector = &xsector[nXSector];
         else
             pXSector = NULL;
-        if (pXSector && pXSector->at17_6 && (pPlayer || !pXSector->at37_7))
+        if (pXSector && pXSector->Exit && (pPlayer || !pXSector->at37_7))
             trTriggerSector(pSprite->sectnum, pXSector, 43);
         ChangeSpriteSect(nSprite, nSector);
         nXSector = sector[nSector].extra;
@@ -4192,10 +4551,10 @@ void MoveDude(spritetype *pSprite)
             pXSector = &xsector[nXSector];
         else
             pXSector = NULL;
-        if (pXSector && pXSector->at17_5 && (pPlayer || !pXSector->at37_7))
+        if (pXSector && pXSector->Enter && (pPlayer || !pXSector->at37_7))
         {
             if (sector[nSector].lotag == 604)
-                pXSector->at4_0 = pPlayer ? nSprite : -1;
+                pXSector->data = pPlayer ? nSprite : -1;
             trTriggerSector(nSector, pXSector, 42);
         }
         nSector = pSprite->sectnum;
@@ -4205,9 +4564,9 @@ void MoveDude(spritetype *pSprite)
     if (sector[nSector].extra > 0)
     {
         XSECTOR *pXSector = &xsector[sector[nSector].extra];
-        if (pXSector->at13_4)
+        if (pXSector->Underwater)
             bUnderwater = 1;
-        if (pXSector->at13_5)
+        if (pXSector->Depth)
             bDepth = 1;
     }
     int nUpperLink = gUpperLink[nSector];
@@ -4256,7 +4615,7 @@ void MoveDude(spritetype *pSprite)
             zvel[nSprite] += vc;
         }
     }
-    if (pPlayer && zvel[nSprite] > 0x155555 && !pPlayer->at31b && pXSprite->at30_0 > 0)
+    if (pPlayer && zvel[nSprite] > 0x155555 && !pPlayer->at31b && pXSprite->height > 0)
     {
         pPlayer->at31b = 1;
         sfxPlay3DSound(pSprite, 719, 0, 0);
@@ -4279,7 +4638,7 @@ void MoveDude(spritetype *pSprite)
             break;
         case 10:
         case 14:
-            pXSprite->at17_6 = 0;
+            pXSprite->medium = 0;
             if (pPlayer)
             {
                 pPlayer->at2f = 0;
@@ -4309,13 +4668,23 @@ void MoveDude(spritetype *pSprite)
                 }
             }
             break;
-        case 9:
-            pXSprite->at17_6 = 1;
+        // By NoOne: part of "change of global view palette for stacks" feature
+        case kMarkerUpWater:
+        case kMarkerUpGoo:
+        {
+            pXSprite->medium = nLink == kMarkerUpGoo ? 2 : 1;
+
             if (pPlayer)
             {
+                // look for palette in data2 of marker. If value <= 0, use default ones.
+                pPlayer->nWaterPal = 0;
+                int nXUpper = sprite[gUpperLink[nSector]].extra;
+                if (nXUpper >= 0)
+                    pPlayer->nWaterPal = xsprite[nXUpper].data2;
+
                 pPlayer->at2f = 1;
-                pXSprite->at2c_0 = 0;
-                pPlayer->at302 = klabs(zvel[nSprite])>>12;
+                pXSprite->burnTime = 0;
+                pPlayer->at302 = klabs(zvel[nSprite]) >> 12;
                 evPost(nSprite, 3, 0, CALLBACK_ID_10);
                 sfxPlay3DSound(pSprite, 720, -1, 0);
             }
@@ -4325,16 +4694,18 @@ void MoveDude(spritetype *pSprite)
                 {
                 case 201:
                 case 202:
-                    pXSprite->at2c_0 = 0;
+                    pXSprite->burnTime = 0;
                     evPost(nSprite, 3, 0, CALLBACK_ID_11);
                     sfxPlay3DSound(pSprite, 720, -1, 0);
                     aiNewState(pSprite, pXSprite, &cultistSwimGoto);
                     break;
                 case 240:
-                    if (Chance(0xa00))
+                {
+                    // There is no difference between water and goo except following chance:
+                    if (Chance(nLink == kMarkerUpGoo ? 0x400 : 0xa00))
                     {
                         pSprite->type = 201;
-                        pXSprite->at2c_0 = 0;
+                        pXSprite->burnTime = 0;
                         evPost(nSprite, 3, 0, CALLBACK_ID_11);
                         sfxPlay3DSound(pSprite, 720, -1, 0);
                         aiNewState(pSprite, pXSprite, &cultistSwimGoto);
@@ -4342,26 +4713,27 @@ void MoveDude(spritetype *pSprite)
                     else
                     {
                         pSprite->type = 202;
-                        pXSprite->at2c_0 = 0;
+                        pXSprite->burnTime = 0;
                         evPost(nSprite, 3, 0, CALLBACK_ID_11);
                         sfxPlay3DSound(pSprite, 720, -1, 0);
                         aiNewState(pSprite, pXSprite, &cultistSwimGoto);
                     }
                     break;
+                }
                 case 203:
-                    pXSprite->at2c_0 = 0;
+                    pXSprite->burnTime = 0;
                     evPost(nSprite, 3, 0, CALLBACK_ID_11);
                     sfxPlay3DSound(pSprite, 720, -1, 0);
                     aiNewState(pSprite, pXSprite, &zombieAGoto);
                     break;
                 case 204:
-                    pXSprite->at2c_0 = 0;
+                    pXSprite->burnTime = 0;
                     evPost(nSprite, 3, 0, CALLBACK_ID_11);
                     sfxPlay3DSound(pSprite, 720, -1, 0);
                     aiNewState(pSprite, pXSprite, &zombieFGoto);
                     break;
                 case 217:
-                    pXSprite->at2c_0 = 0;
+                    pXSprite->burnTime = 0;
                     evPost(nSprite, 3, 0, CALLBACK_ID_11);
                     sfxPlay3DSound(pSprite, 720, -1, 0);
                     aiNewState(pSprite, pXSprite, &gillBeastSwimGoto);
@@ -4375,17 +4747,18 @@ void MoveDude(spritetype *pSprite)
                 case 219:
                 case 220:
                 case 239:
-                    actKillDude(pSprite->index, pSprite, DAMAGE_TYPE_0, 1000<<4);
+                    actKillDude(pSprite->index, pSprite, DAMAGE_TYPE_0, 1000 << 4);
                     break;
                 }
             }
             break;
-        case 13:
-            pXSprite->at17_6 = 2;
+        }
+        /*case 13:
+            pXSprite->medium = 2;
             if (pPlayer)
             {
-                pPlayer->at2f = 1;
-                pXSprite->at2c_0 = 0;
+                pPlayer->changeTargetKin = 1;
+                pXSprite->burnTime = 0;
                 pPlayer->at302 = klabs(zvel[nSprite])>>12;
                 evPost(nSprite, 3, 0, CALLBACK_ID_10);
                 sfxPlay3DSound(pSprite, 720, -1, 0);
@@ -4396,7 +4769,7 @@ void MoveDude(spritetype *pSprite)
                 {
                 case 201:
                 case 202:
-                    pXSprite->at2c_0 = 0;
+                    pXSprite->burnTime = 0;
                     evPost(nSprite, 3, 0, CALLBACK_ID_11);
                     sfxPlay3DSound(pSprite, 720, -1, 0);
                     aiNewState(pSprite, pXSprite, &cultistSwimGoto);
@@ -4405,7 +4778,7 @@ void MoveDude(spritetype *pSprite)
                     if (Chance(0x400))
                     {
                         pSprite->type = 201;
-                        pXSprite->at2c_0 = 0;
+                        pXSprite->burnTime = 0;
                         evPost(nSprite, 3, 0, CALLBACK_ID_11);
                         sfxPlay3DSound(pSprite, 720, -1, 0);
                         aiNewState(pSprite, pXSprite, &cultistSwimGoto);
@@ -4413,26 +4786,26 @@ void MoveDude(spritetype *pSprite)
                     else
                     {
                         pSprite->type = 202;
-                        pXSprite->at2c_0 = 0;
+                        pXSprite->burnTime = 0;
                         evPost(nSprite, 3, 0, CALLBACK_ID_11);
                         sfxPlay3DSound(pSprite, 720, -1, 0);
                         aiNewState(pSprite, pXSprite, &cultistSwimGoto);
                     }
                     break;
                 case 203:
-                    pXSprite->at2c_0 = 0;
+                    pXSprite->burnTime = 0;
                     evPost(nSprite, 3, 0, CALLBACK_ID_11);
                     sfxPlay3DSound(pSprite, 720, -1, 0);
                     aiNewState(pSprite, pXSprite, &zombieAGoto);
                     break;
                 case 204:
-                    pXSprite->at2c_0 = 0;
+                    pXSprite->burnTime = 0;
                     evPost(nSprite, 3, 0, CALLBACK_ID_11);
                     sfxPlay3DSound(pSprite, 720, -1, 0);
                     aiNewState(pSprite, pXSprite, &zombieFGoto);
                     break;
                 case 217:
-                    pXSprite->at2c_0 = 0;
+                    pXSprite->burnTime = 0;
                     evPost(nSprite, 3, 0, CALLBACK_ID_11);
                     sfxPlay3DSound(pSprite, 720, -1, 0);
                     aiNewState(pSprite, pXSprite, &gillBeastSwimGoto);
@@ -4450,7 +4823,7 @@ void MoveDude(spritetype *pSprite)
                     break;
                 }
             }
-            break;
+            break;*/
         }
     }
     GetSpriteExtents(pSprite, &top, &bottom);
@@ -4538,7 +4911,7 @@ void MoveDude(spritetype *pSprite)
         gSpriteHit[nXSprite].ceilhit = 0;
     GetSpriteExtents(pSprite,&top,&bottom);
 
-    pXSprite->at30_0 = ClipLow(floorZ-bottom, 0)>>8;
+    pXSprite->height = ClipLow(floorZ-bottom, 0)>>8;
     if (xvel[nSprite] || yvel[nSprite])
     {
         if ((floorHit & 0xe000) == 0xc000)
@@ -4552,13 +4925,13 @@ void MoveDude(spritetype *pSprite)
             }
         }
         int nXSector = sector[pSprite->sectnum].extra;
-        if (nXSector > 0 && xsector[nXSector].at13_4)
+        if (nXSector > 0 && xsector[nXSector].Underwater)
             return;
-        if (pXSprite->at30_0 >= 0x100)
+        if (pXSprite->height >= 0x100)
             return;
         int nDrag = gDudeDrag;
-        if (pXSprite->at30_0 > 0)
-            nDrag -= scale(gDudeDrag, pXSprite->at30_0, 0x100);
+        if (pXSprite->height > 0)
+            nDrag -= scale(gDudeDrag, pXSprite->height, 0x100);
         xvel[nSprite] -= mulscale16r(xvel[nSprite], nDrag);
         yvel[nSprite] -= mulscale16r(yvel[nSprite], nDrag);
 
@@ -4671,7 +5044,7 @@ int MoveMissile(spritetype *pSprite)
             if (pWall->extra > 0)
             {
                 XWALL *pXWall = &xwall[pWall->extra];
-                if (pXWall->at10_6)
+                if (pXWall->triggerVector)
                 {
                     trTriggerWall(gHitInfo.hitwall, pXWall, 51);
                     if (!(pWall->cstat&64))
@@ -4742,11 +5115,11 @@ void actExplodeSprite(spritetype *pSprite)
         return;
     sfxKill3DSound(pSprite, -1, -1);
     evKill(pSprite->index, 3);
-    int v4;
+    int nType;
     switch (pSprite->type)
     {
     case 312:
-        v4 = 7;
+        nType = 7;
         seqSpawn(4, 3, nXSprite, -1);
         if (Chance(0x8000))
             pSprite->cstat |= 4;
@@ -4754,7 +5127,7 @@ void actExplodeSprite(spritetype *pSprite)
         GibSprite(pSprite, GIBTYPE_5, NULL, NULL);
         break;
     case 303:
-        v4 = 3;
+        nType = 3;
         seqSpawn(9, 3, nXSprite, -1);
         if (Chance(0x8000))
             pSprite->cstat |= 4;
@@ -4763,13 +5136,13 @@ void actExplodeSprite(spritetype *pSprite)
         break;
     case 313:
     case 314:
-        v4 = 3;
+        nType = 3;
         seqSpawn(5, 3, nXSprite, -1);
         sfxPlay3DSound(pSprite, 304, -1, 0);
         GibSprite(pSprite, GIBTYPE_5, NULL, NULL);
         break;
     case 418:
-        v4 = 0;
+        nType = 0;
         if (gSpriteHit[nXSprite].florhit == 0)
             seqSpawn(4,3,nXSprite,-1);
         else
@@ -4780,7 +5153,8 @@ void actExplodeSprite(spritetype *pSprite)
     case 401:
     case 402:
     case 419:
-        v4 = 1;
+    case kGDXThingTNTProx:
+        nType = 1;
         if (gSpriteHit[nXSprite].florhit == 0)
             seqSpawn(4,3,nXSprite,-1);
         else
@@ -4789,7 +5163,7 @@ void actExplodeSprite(spritetype *pSprite)
         GibSprite(pSprite, GIBTYPE_5, NULL, NULL);
         break;
     case 420:
-        v4 = 4;
+        nType = 4;
         seqSpawn(5, 3, nXSprite, -1);
         sfxPlay3DSound(pSprite, 307, -1, 0);
         GibSprite(pSprite, GIBTYPE_5, NULL, NULL);
@@ -4801,12 +5175,12 @@ void actExplodeSprite(spritetype *pSprite)
         if (actCheckRespawn(pSprite))
         {
             XSPRITE *pXSprite = &xsprite[nXSprite];
-            pXSprite->at1_6 = 1;
+            pXSprite->state = 1;
             pXSprite->health = thingInfo[0].at0<<4;
         }
         else
             actPostSprite(pSprite->index, 1024);
-        v4 = 2;
+        nType = 2;
         nXSprite = pSprite2->extra;
         seqSpawn(4, 3, nXSprite, -1);
         sfxPlay3DSound(pSprite2, 305, -1, 0);
@@ -4814,20 +5188,47 @@ void actExplodeSprite(spritetype *pSprite)
         pSprite = pSprite2;
         break;
     }
-    case 459:
-        v4 = 1;
-        seqSpawn(4, 3, nXSprite, -1);
-        sfxPlay3DSound(pSprite, 304, -1, 0);
+    case 459:	// By NoOne: allow to customize hidden exploder thing
+	{
+		// Defaults for exploder
+		nType = 1; int nSnd = 304; int nSeq = 4;
+
+		// Temp variables for override via data fields
+		int tSnd = 0; int tSeq = 0;
+
+
+		XSPRITE *pXSPrite = &xsprite[nXSprite];
+		nType = pXSPrite->data1;  // Explosion type
+		tSeq = pXSPrite->data2; // SEQ id
+		tSnd = pXSPrite->data3; // Sound Id
+
+		if (nType <= 1 || nType > kExplodeMax) { nType = 1; nSeq = 4; nSnd = 304; }
+		else if (nType == 2) { nSeq = 4; nSnd = 305; }
+		else if (nType == 3) { nSeq = 9; nSnd = 307; }
+		else if (nType == 4) { nSeq = 5; nSnd = 307; }
+		else if (nType <= 6) { nSeq = 4; nSnd = 303; }
+		else if (nType == 7) { nSeq = 4; nSnd = 303; }
+		else if (nType == 8) { nType = 0; nSeq = 3; nSnd = 303; }
+
+		// Override previous sound and seq assigns
+		if (tSeq > 0) nSeq = tSeq;
+		if (tSnd > 0) nSnd = tSnd;
+
+		//if (kExist(pXSPrite->data2, seq)) // GDX method to check if file exist in RFF
+		seqSpawn(nSeq, 3, nXSprite, -1);
+
+		sfxPlay3DSound(pSprite, nSnd, -1, 0);
+	}
         break;
     case 429:
-        v4 = 3;
+        nType = 3;
         seqSpawn(9, 3, nXSprite, -1);
         sfxPlay3DSound(pSprite, 307, -1, 0);
         GibSprite(pSprite, GIBTYPE_5, NULL, NULL);
         sub_746D4(pSprite, 240);
         break;
     default:
-        v4 = 1;
+        nType = 1;
         seqSpawn(4, 3, nXSprite, -1);
         if (Chance(0x8000))
             pSprite->cstat |= 4;
@@ -4838,28 +5239,28 @@ void actExplodeSprite(spritetype *pSprite)
     int nSprite = pSprite->index;
     xvel[nSprite] = yvel[nSprite] = zvel[nSprite] = 0;
     actPostSprite(nSprite, 2);
-    pSprite->xrepeat = pSprite->yrepeat = explodeInfo[v4].at0;
+    pSprite->xrepeat = pSprite->yrepeat = explodeInfo[nType].at0;
     pSprite->hitag &= ~3;
-    pSprite->type = v4;
-    EXPLOSION *pExplodeInfo = &explodeInfo[v4];
+    pSprite->type = nType;
+    EXPLOSION *pExplodeInfo = &explodeInfo[nType];
     xsprite[nXSprite].target = 0;
-    xsprite[nXSprite].at10_0 = pExplodeInfo->atf;
-    xsprite[nXSprite].at12_0 = pExplodeInfo->at13;
-    xsprite[nXSprite].at14_0 = pExplodeInfo->at17;
+    xsprite[nXSprite].data1 = pExplodeInfo->atf;
+    xsprite[nXSprite].data2 = pExplodeInfo->at13;
+    xsprite[nXSprite].data3 = pExplodeInfo->at17;
 }
 
 void actActivateGibObject(spritetype *pSprite, XSPRITE *pXSprite)
 {
-    int vdx = ClipRange(pXSprite->at10_0, 0, 31);
-    int vc = ClipRange(pXSprite->at12_0, 0, 31);
-    int v4 = ClipRange(pXSprite->at14_0, 0, 31);
-    int vbp = pXSprite->at18_2;
-    int v8 = pXSprite->atc_0;
+    int vdx = ClipRange(pXSprite->data1, 0, 31);
+    int vc = ClipRange(pXSprite->data2, 0, 31);
+    int v4 = ClipRange(pXSprite->data3, 0, 31);
+    int vbp = pXSprite->data4;
+    int v8 = pXSprite->dropMsg;
     if (vdx > 0)
         GibSprite(pSprite, (GIBTYPE)(vdx-1), NULL, NULL);
     if (vc > 0)
         GibSprite(pSprite, (GIBTYPE)(vc-1), NULL, NULL);
-    if (v4 > 0 && pXSprite->at2c_0 > 0)
+    if (v4 > 0 && pXSprite->burnTime > 0)
         GibSprite(pSprite, (GIBTYPE)(v4-1), NULL, NULL);
     if (vbp > 0)
         sfxPlay3DSound(pSprite->x, pSprite->y, pSprite->z, vbp, pSprite->sectnum);
@@ -4874,7 +5275,7 @@ bool IsUnderWater(spritetype *pSprite)
     int nSector = pSprite->sectnum;
     int nXSector = sector[nSector].extra;
     if (nXSector > 0 && nXSector < kMaxXSectors)
-        if (xsector[nXSector].at13_4)
+        if (xsector[nXSector].Underwater)
             return 1;
     return 0;
 }
@@ -4895,14 +5296,14 @@ void actProcessSprites(void)
         {
             XSPRITE *pXSprite = &xsprite[nXSprite];
             if (pSprite->type == 425 || pSprite->type == 426 || pSprite->type == 427)
-                if (pXSprite->at17_5 && gFrameClock >= pXSprite->at20_0)
-                    pXSprite->at17_5 = 0;
-            if (pXSprite->at2c_0 > 0)
+                if (pXSprite->locked && gFrameClock >= pXSprite->targetX)
+                    pXSprite->locked = 0;
+            if (pXSprite->burnTime > 0)
             {
-                pXSprite->at2c_0 = ClipLow(pXSprite->at2c_0-4,0);
-                actDamageSprite(actOwnerIdToSpriteId(pXSprite->at2e_0), pSprite, DAMAGE_TYPE_1, 8);
+                pXSprite->burnTime = ClipLow(pXSprite->burnTime-4,0);
+                actDamageSprite(actOwnerIdToSpriteId(pXSprite->burnSource), pSprite, DAMAGE_TYPE_1, 8);
             }
-            if (pXSprite->ate_4)
+            if (pXSprite->Proximity)
             {
                 if (pSprite->type == 431)
                     pXSprite->target = -1;
@@ -4932,22 +5333,20 @@ void actProcessSprites(void)
                                 continue;
                             v1b0 = 512;
                         }
-                        if (CheckProximity(pSprite2, pSprite->x, pSprite->y, pSprite->z, pSprite->sectnum, v1b0))
-                        {
-                            if (pSprite->type == 431)
-                            {
-                                if (Chance(0x4000) || nNextSprite < 0)
-                                {
-                                    if (pSprite2->cstat & 0x10001)
-                                        pXSprite->target = pSprite2->index;
-                                    else
-                                        continue;
-                                }
-                                else
-                                    continue;
+                        if (CheckProximity(pSprite2, pSprite->x, pSprite->y, pSprite->z, pSprite->sectnum, v1b0)) {
+                            
+                            switch (pSprite->type) {
+                                case kGDXThingTNTProx:
+                                    if (!IsPlayerSprite(pSprite2)) continue;
+                                    pSprite->pal = 0;
+                                    break;
+                                case 431:
+                                    if (!Chance(0x4000) && nNextSprite >= 0) continue;
+                                    if (pSprite2->cstat & 0x10001) pXSprite->target = pSprite2->index;
+                                    else continue;
+                                    break;
                             }
-                            if (pSprite->owner == -1)
-                                actPropagateSpriteOwner(pSprite, pSprite2);
+                            if (pSprite->owner == -1) actPropagateSpriteOwner(pSprite, pSprite2);
                             trTriggerSprite(nSprite, pXSprite, 35);
                         }
                     }
@@ -4971,7 +5370,7 @@ void actProcessSprites(void)
             dassert(xsector[nXSector].reference == nSector);
             pXSector = &xsector[nXSector];
         }
-        if (pXSector && pXSector->at14_0 && (pXSector->at13_0 || pXSector->at1_6 || pXSector->at1_7))
+        if (pXSector && pXSector->panVel && (pXSector->panAlways || pXSector->state || pXSector->busy))
         {
             int nType = pSprite->type - kThingBase;
             THINGINFO *pThingInfo = &thingInfo[nType];
@@ -4983,19 +5382,19 @@ void actProcessSprites(void)
         if (pSprite->hitag&3)
         {
             viewBackupSpriteLoc(nSprite, pSprite);
-            if (pXSector && pXSector->at14_0)
+            if (pXSector && pXSector->panVel)
             {
                 int top, bottom;
                 GetSpriteExtents(pSprite, &top, &bottom);
                 if (getflorzofslope(nSector, pSprite->x, pSprite->y) <= bottom)
                 {
-                    int angle = pXSector->at15_0;
+                    int angle = pXSector->panAngle;
                     int speed = 0;
-                    if (pXSector->at13_0 || pXSector->at1_6 || pXSector->at1_7)
+                    if (pXSector->panAlways || pXSector->state || pXSector->busy)
                     {
-                        speed = pXSector->at14_0 << 9;
-                        if (!pXSector->at13_0 && pXSector->at1_7)
-                            speed = mulscale16(speed, pXSector->at1_7);
+                        speed = pXSector->panVel << 9;
+                        if (!pXSector->panAlways && pXSector->busy)
+                            speed = mulscale16(speed, pXSector->busy);
                     }
                     if (sector[nSector].floorstat&64)
                         angle = (angle+GetWallAngle(sector[nSector].wallptr)+512)&2047;
@@ -5018,13 +5417,25 @@ void actProcessSprites(void)
                     if (nXSprite)
                     {
                         XSPRITE *pXSprite = &xsprite[nXSprite];
-                        if (pXSprite->ate_0)
+                        if (pXSprite->Impact)
                             trTriggerSprite(nSprite, pXSprite, 0);
                         switch (pSprite->type)
                         {
                         case 423:
                         case 424:
                             MakeSplash(pSprite, pXSprite);
+                            break;
+                        case kGDXThingThrowableRock:
+                            seqSpawn(24, 3, nXSprite, -1);
+                            if ((hit & 0xe000) == 0xc000)
+                            {
+                                pSprite->xrepeat = 32;
+                                pSprite->yrepeat = 32;
+                                int nObject = hit & 0x1fff;
+                                dassert(nObject >= 0 && nObject < kMaxSprites);
+                                spritetype * pObject = &sprite[nObject];
+                                actDamageSprite(actSpriteOwnerToSpriteId(pSprite), pObject, DAMAGE_TYPE_0, pXSprite->data1);
+                            }
                             break;
                         case 421:
                             seqSpawn(24, 3, nXSprite, -1);
@@ -5045,7 +5456,7 @@ void actProcessSprites(void)
                             else
                             {
                                 int nObject = hit & 0x1fff;
-								if ((hit&0xe000) != 0xc000 && (nObject < 0 || nObject >= 4096))
+                                if ((hit&0xe000) != 0xc000 && (nObject < 0 || nObject >= 4096))
                                     break;
                                 dassert(nObject >= 0 && nObject < kMaxSprites);
                                 spritetype *pObject = &sprite[nObject];
@@ -5056,7 +5467,7 @@ void actProcessSprites(void)
                         case 429:
                         {
                             int nObject = hit & 0x1fff;
-							if ((hit&0xe000) != 0xc000 && (nObject < 0 || nObject >= 4096))
+                            if ((hit&0xe000) != 0xc000 && (nObject < 0 || nObject >= 4096))
                                 break;
                             dassert(nObject >= 0 && nObject < kMaxSprites);
                             int UNUSED(nOwner) = actSpriteOwnerToSpriteId(pSprite);
@@ -5098,7 +5509,14 @@ void actProcessSprites(void)
         int nSector = pSprite->sectnum;
         gAffectedSectors[0] = -1;
         gAffectedXWalls[0] = -1;
-        GetClosestSpriteSectors(nSector, x, y, pExplodeInfo->at3, gAffectedSectors, v24c, gAffectedXWalls);
+        
+        // By NoOne: Allow to override explosion radius by data4 field of any sprite which have statnum 2 set in editor
+        // or of Hidden Exploder.
+        int radius = pXSprite->data4;
+        if (pXSprite->data4 <= 0)
+            radius = pExplodeInfo->at3;
+        
+        GetClosestSpriteSectors(nSector, x, y, radius, gAffectedSectors, v24c, gAffectedXWalls);
         for (int i = 0; i < kMaxXWalls; i++)
         {
             int nWall = gAffectedXWalls[i];
@@ -5114,7 +5532,7 @@ void actProcessSprites(void)
                 continue;
             if (TestBitString(v24c, pDude->sectnum))
             {
-                if (pXSprite->at10_0 && CheckProximity(pDude, x, y, z, nSector, pExplodeInfo->at3))
+                if (pXSprite->data1 && CheckProximity(pDude, x, y, z, nSector, radius))
                 {
                     if (pExplodeInfo->at1 && pXSprite->target == 0)
                     {
@@ -5127,7 +5545,7 @@ void actProcessSprites(void)
                     {
                         dassert(pDude->extra > 0 && pDude->extra < kMaxXSprites);
                         XSPRITE *pXDude = &xsprite[pDude->extra];
-                        if (!pXDude->at2c_0)
+                        if (!pXDude->burnTime)
                             evPost(nSprite2, 3, 0, CALLBACK_ID_0);
                         actBurnSprite(pSprite->owner, pXDude, pExplodeInfo->atb<<2);
                     }
@@ -5141,10 +5559,10 @@ void actProcessSprites(void)
                 continue;
             if (TestBitString(v24c, pThing->sectnum))
             {
-                if (pXSprite->at10_0 && CheckProximity(pThing, x, y, z, nSector, pExplodeInfo->at3))
+                if (pXSprite->data1 && CheckProximity(pThing, x, y, z, nSector, radius))
                 {
                     XSPRITE *pXSprite2 = &xsprite[pThing->extra];
-                    if (!pXSprite2->at17_5)
+                    if (!pXSprite2->locked)
                     {
                         if (pExplodeInfo->at7)
                             ConcussSprite(nOwner, pThing, x, y, z, pExplodeInfo->at7);
@@ -5152,7 +5570,7 @@ void actProcessSprites(void)
                         {
                             dassert(pThing->extra > 0 && pThing->extra < kMaxXSprites);
                             XSPRITE *pXThing = &xsprite[pThing->extra];
-                            if (pThing->type == 400 && !pXThing->at2c_0)
+                            if (pThing->type == 400 && !pXThing->burnTime)
                                 evPost(nSprite2, 3, 0, CALLBACK_ID_0);
                             actBurnSprite(pSprite->owner, pXThing, pExplodeInfo->atb<<2);
                         }
@@ -5167,13 +5585,19 @@ void actProcessSprites(void)
             int dy = (y - pSprite2->y)>>4;
             int dz = (z - pSprite2->z)>>8;
             int nDist = dx*dx+dy*dy+dz*dz+0x40000;
-            int t = divscale16(pXSprite->at12_0, nDist);
+            int t = divscale16(pXSprite->data2, nDist);
             gPlayer[p].at35a += t;
         }
-        pXSprite->at10_0 = ClipLow(pXSprite->at10_0-4, 0);
-        pXSprite->at12_0 = ClipLow(pXSprite->at12_0-4, 0);
-        pXSprite->at14_0 = ClipLow(pXSprite->at14_0-4, 0);
-        if (!pXSprite->at10_0 && !pXSprite->at12_0 && !pXSprite->at14_0 && seqGetStatus(3, nXSprite) < 0)
+        
+        // By NoOne: if data4 > 0, do not remove explosion. This can be useful when designer wants put explosion generator in map manually
+	    // via sprite statnum 2.
+        if (!(pSprite->hitag & kHitagExtBit)) {
+            pXSprite->data1 = ClipLow(pXSprite->data1 - 4, 0);
+            pXSprite->data2 = ClipLow(pXSprite->data2 - 4, 0);
+            pXSprite->data3 = ClipLow(pXSprite->data3 - 4, 0);
+        }
+
+        if (pXSprite->data1 == 0 && pXSprite->data2 == 0 && pXSprite->data3 == 0 && seqGetStatus(3, nXSprite) < 0)
             actPostSprite(nSprite, 1024);
     }
     for (nSprite = headspritestat[11]; nSprite >= 0; nSprite = nextspritestat[nSprite])
@@ -5187,15 +5611,15 @@ void actProcessSprites(void)
         switch (pSprite->type)
         {
         case 454:
-            pXSprite->at12_0 = ClipLow(pXSprite->at12_0-4, 0);
+            pXSprite->data2 = ClipLow(pXSprite->data2-4, 0);
             break;
         case 452:
-            if (pXSprite->at1_6 && seqGetStatus(3, nXSprite) < 0)
+            if (pXSprite->state && seqGetStatus(3, nXSprite) < 0)
             {
                 int x = pSprite->x;
                 int y = pSprite->y;
                 int z = pSprite->z;
-                int t = (pXSprite->at10_0<<23)/120;
+                int t = (pXSprite->data1<<23)/120;
                 int dx = mulscale30(t, Cos(pSprite->ang));
                 int dy = mulscale30(t, Sin(pSprite->ang));
                 for (int i = 0; i < 2; i++)
@@ -5212,7 +5636,7 @@ void actProcessSprites(void)
                 }
                 dy = Sin(pSprite->ang)>>16;
                 dx = Cos(pSprite->ang)>>16;
-                gVectorData[VECTOR_TYPE_20].at9 = pXSprite->at10_0<<9;
+                gVectorData[VECTOR_TYPE_20].maxDist = pXSprite->data1<<9;
                 actFireVector(pSprite, 0, 0, dx, dy, Random2(0x8888), VECTOR_TYPE_20);
             }
             break;
@@ -5227,7 +5651,7 @@ void actProcessSprites(void)
         if (nXSprite > 0)
         {
             XSPRITE *pXSprite = &xsprite[nXSprite];
-            if (pXSprite->at2c_0 > 0)
+            if (pXSprite->burnTime > 0)
             {
                 switch (pSprite->type)
                 {
@@ -5235,26 +5659,74 @@ void actProcessSprites(void)
                 case 240:
                 case 241:
                 case 242:
-                    actDamageSprite(actOwnerIdToSpriteId(pXSprite->at2e_0), pSprite, DAMAGE_TYPE_1, 8);
+                    actDamageSprite(actOwnerIdToSpriteId(pXSprite->burnSource), pSprite, DAMAGE_TYPE_1, 8);
                     break;
                 default:
-                    pXSprite->at2c_0 = ClipLow(pXSprite->at2c_0-4, 0);
-                    actDamageSprite(actOwnerIdToSpriteId(pXSprite->at2e_0), pSprite, DAMAGE_TYPE_1, 8);
+                    pXSprite->burnTime = ClipLow(pXSprite->burnTime-4, 0);
+                    actDamageSprite(actOwnerIdToSpriteId(pXSprite->burnSource), pSprite, DAMAGE_TYPE_1, 8);
                     break;
                 }
             }
+
+            // By NoOne: handle incarnations of custom dude
+            if (pSprite->type == kGDXDudeUniversalCultist && pXSprite->health <= 0 && seqGetStatus(3, nXSprite) < 0) {
+                XSPRITE* pXIncarnation = getNextIncarnation(pXSprite);
+                if (pXIncarnation != NULL) {
+                    spritetype* pIncarnation = &sprite[pXIncarnation->reference];
+
+                    pSprite->type = pIncarnation->type;
+                    pSprite->pal = pIncarnation->pal;
+                    pSprite->shade = pIncarnation->shade;
+
+                    pXSprite->txID = pXIncarnation->txID;
+                    pXSprite->command = pXIncarnation->command;
+                    pXSprite->triggerOn = pXIncarnation->triggerOn;
+                    pXSprite->triggerOff = pXIncarnation->triggerOff;
+
+                    pXSprite->burnTime = 0;
+                    pXSprite->burnSource = -1;
+
+                    pXSprite->data1 = pXIncarnation->data1;
+                    pXSprite->data2 = pXIncarnation->data2;
+                    pXSprite->data3 = pXIncarnation->data3;
+                    pXSprite->data4 = pXIncarnation->data4;
+
+                    pXSprite->dudeGuard = pXIncarnation->dudeGuard;
+                    pXSprite->dudeDeaf = pXIncarnation->dudeDeaf;
+                    pXSprite->dudeAmbush = pXIncarnation->dudeAmbush;
+                    pXSprite->dudeFlag4 = pXIncarnation->dudeFlag4;
+
+                    pXSprite->busyTime = pXIncarnation->busyTime;
+                    aiInitSprite(pSprite);
+                    switch (pSprite->type) {
+                        case kGDXDudeUniversalCultist:
+                        case kGDXGenDudeBurning:
+                            if (pXSprite->data2 > 0) seqSpawn(pXSprite->data2, 3, nXSprite, -1);
+                            else seqSpawn(dudeInfo[pSprite->type - kDudeBase].seqStartID, 3, nXSprite, -1);
+                            break;
+                        default:
+                            seqSpawn(dudeInfo[pSprite->type - kDudeBase].seqStartID, 3, nXSprite, -1);
+                            break;
+                    }
+
+                    if (pXSprite->data4 > 0) pXSprite->health = pXSprite->data4;
+                    else pXSprite->health = dudeInfo[pSprite->type - kDudeBase].startHealth << 4;
+                    aiActivateDude(pSprite, pXSprite);
+                }
+            }
+
             if (pSprite->type == 227)
             {
                 if (pXSprite->health <= 0 && seqGetStatus(3, nXSprite) < 0)
                 {
-                    pXSprite->health = dudeInfo[28].at2<<4;
+                    pXSprite->health = dudeInfo[28].startHealth<<4;
                     pSprite->type = 228;
                     if (pXSprite->target != -1)
                         aiSetTarget(pXSprite, pXSprite->target);
                     aiActivateDude(pSprite, pXSprite);
                 }
             }
-            if (pXSprite->ate_4 && !pXSprite->atd_2)
+            if (pXSprite->Proximity && !pXSprite->isTriggered)
             {
                 for (int nSprite2 = headspritestat[6]; nSprite2 >= 0; nSprite2 = nNextSprite)
                 {
@@ -5335,13 +5807,13 @@ void actProcessSprites(void)
             GetSpriteExtents(pSprite, &top, &bottom);
             if (getflorzofslope(nSector, pSprite->x, pSprite->y) <= bottom)
             {
-                int angle = pXSector->at15_0;
+                int angle = pXSector->panAngle;
                 int speed = 0;
-                if (pXSector->at13_0 || pXSector->at1_6 || pXSector->at1_7)
+                if (pXSector->panAlways || pXSector->state || pXSector->busy)
                 {
-                    speed = pXSector->at14_0 << 9;
-                    if (!pXSector->at13_0 && pXSector->at1_7)
-                        speed = mulscale16(speed, pXSector->at1_7);
+                    speed = pXSector->panVel << 9;
+                    if (!pXSector->panAlways && pXSector->busy)
+                        speed = mulscale16(speed, pXSector->busy);
                 }
                 if (sector[nSector].floorstat&64)
                     angle = (angle+GetWallAngle(sector[nSector].wallptr)+512)&2047;
@@ -5351,7 +5823,7 @@ void actProcessSprites(void)
                 yvel[nSprite] += dy;
             }
         }
-        if (pXSector && pXSector->at13_4)
+        if (pXSector && pXSector->Underwater)
             actAirDrag(pSprite, 5376);
         else
             actAirDrag(pSprite, 128);
@@ -5379,9 +5851,9 @@ void actProcessSprites(void)
         }
         if (pTarget->extra && xsprite[pTarget->extra].health > 0)
         {
-            int x = pTarget->x+mulscale30r(Cos(pXSprite->at16_0+pTarget->ang), pTarget->clipdist*2);
-            int y = pTarget->y+mulscale30r(Sin(pXSprite->at16_0+pTarget->ang), pTarget->clipdist*2);
-            int z = pTarget->z+pXSprite->at28_0;
+            int x = pTarget->x+mulscale30r(Cos(pXSprite->goalAng+pTarget->ang), pTarget->clipdist*2);
+            int y = pTarget->y+mulscale30r(Sin(pXSprite->goalAng+pTarget->ang), pTarget->clipdist*2);
+            int z = pTarget->z+pXSprite->targetZ;
             vec3_t pos = { x, y, z };
             setsprite(nSprite,&pos);
             xvel[nSprite] = xvel[nTarget];
@@ -5426,11 +5898,11 @@ spritetype * actSpawnSprite(int nSector, int x, int y, int z, int nStat, char a6
 
 spritetype * actSpawnSprite(spritetype *pSource, int nStat);
 
-spritetype *sub_36878(spritetype *pSource, short nType, int a3, int a4)
+spritetype *actSpawnDude(spritetype *pSource, short nType, int a3, int a4)
 {
+    XSPRITE* pXSource = &xsprite[pSource->extra];
     spritetype *pSprite2 = actSpawnSprite(pSource, 6);
-    if (!pSprite2)
-        return NULL;
+    if (!pSprite2) return NULL;
     XSPRITE *pXSprite2 = &xsprite[pSprite2->extra];
     int angle = pSource->ang;
     int nDude = nType-kDudeBase;
@@ -5451,10 +5923,36 @@ spritetype *sub_36878(spritetype *pSource, short nType, int a3, int a4)
     vec3_t pos = { x, y, z };
     setsprite(pSprite2->index, &pos);
     pSprite2->cstat |= 0x1101;
-    pSprite2->clipdist = dudeInfo[nDude].ata;
-    pXSprite2->health = dudeInfo[nDude].at2<<4;
+    pSprite2->clipdist = dudeInfo[nDude].clipdist;
+    pXSprite2->health = dudeInfo[nDude].startHealth<<4;
     if (gSysRes.Lookup(dudeInfo[nDude].seqStartID, "SEQ"))
         seqSpawn(dudeInfo[nDude].seqStartID, 3, pSprite2->extra, -1);
+    
+    // By NoOne: add a way to inherit some values of spawner type 18 by dude.
+    // This way designer can count enemies via switches and do many other interesting things.
+
+                                                // oops, forget to check for source type previously
+    if ((pSource->hitag & kHitagExtBit) != 0 && pSource->type == 18) {
+        
+        //inherit pal?
+        if (pSprite2->pal <= 0) pSprite2->pal = pSource->pal;
+
+        // inherit spawn sprite trigger settings, so designer can count monsters.
+        pXSprite2->txID = pXSource->txID;
+        pXSprite2->command = pXSource->command;
+        pXSprite2->triggerOn = pXSource->triggerOn;
+        pXSprite2->triggerOff = pXSource->triggerOff;
+
+        // inherit drop items
+        pXSprite2->dropMsg = pXSource->dropMsg;
+
+        // inherit dude flags
+        pXSprite2->dudeDeaf = pXSource->dudeDeaf;
+        pXSprite2->dudeGuard = pXSource->dudeGuard;
+        pXSprite2->dudeAmbush = pXSource->dudeAmbush;
+        pXSprite2->dudeFlag4 = pXSource->dudeFlag4;
+    }
+
     aiInitSprite(pSprite2);
     return pSprite2;
 }
@@ -5512,48 +6010,48 @@ spritetype * actSpawnThing(int nSector, int x, int y, int z, int nThingType)
     switch (nThingType)
     {
     case 432:
-        pXThing->at10_0 = 0;
-        pXThing->at12_0 = 0;
-        pXThing->at14_0 = 0;
-        pXThing->at18_2 = 0;
-        pXThing->at1_6 = 1;
-        pXThing->atd_1 = 1;
-        pXThing->atd_2 = 0;
+        pXThing->data1 = 0;
+        pXThing->data2 = 0;
+        pXThing->data3 = 0;
+        pXThing->data4 = 0;
+        pXThing->state = 1;
+        pXThing->triggerOnce = 1;
+        pXThing->isTriggered = 0;
         break;
     case 431:
-        pXThing->at10_0 = 0;
-        pXThing->at12_0 = 0;
-        pXThing->at14_0 = 0;
-        pXThing->at18_2 = 0;
-        pXThing->at1_6 = 1;
-        pXThing->atd_1 = 0;
-        pXThing->atd_2 = 0;
+        pXThing->data1 = 0;
+        pXThing->data2 = 0;
+        pXThing->data3 = 0;
+        pXThing->data4 = 0;
+        pXThing->state = 1;
+        pXThing->triggerOnce = 0;
+        pXThing->isTriggered = 0;
         break;
     case 427:
-        pXThing->at10_0 = 8;
-        pXThing->at12_0 = 0;
-        pXThing->at14_0 = 0;
-        pXThing->at18_2 = 318;
-        pXThing->at20_0 = gFrameClock+180.0;
-        pXThing->at17_5 = 1;
-        pXThing->at1_6 = 1;
-        pXThing->atd_1 = 0;
-        pXThing->atd_2 = 0;
+        pXThing->data1 = 8;
+        pXThing->data2 = 0;
+        pXThing->data3 = 0;
+        pXThing->data4 = 318;
+        pXThing->targetX = gFrameClock+180.0;
+        pXThing->locked = 1;
+        pXThing->state = 1;
+        pXThing->triggerOnce = 0;
+        pXThing->isTriggered = 0;
         break;
     case 425:
     case 426:
         if (nThingType == 425)
-            pXThing->at10_0 = 19;
+            pXThing->data1 = 19;
         else if (nThingType == 426)
-            pXThing->at10_0 = 8;
-        pXThing->at12_0 = 0;
-        pXThing->at14_0 = 0;
-        pXThing->at18_2 = 318;
-        pXThing->at20_0 = gFrameClock+180.0;
-        pXThing->at17_5 = 1;
-        pXThing->at1_6 = 1;
-        pXThing->atd_1 = 0;
-        pXThing->atd_2 = 0;
+            pXThing->data1 = 8;
+        pXThing->data2 = 0;
+        pXThing->data3 = 0;
+        pXThing->data4 = 318;
+        pXThing->targetX = gFrameClock+180.0;
+        pXThing->locked = 1;
+        pXThing->state = 1;
+        pXThing->triggerOnce = 0;
+        pXThing->isTriggered = 0;
         break;
     case 418:
         evPost(nThing, 3, 0, CALLBACK_ID_8);
@@ -5729,29 +6227,29 @@ int actGetRespawnTime(spritetype *pSprite)
     XSPRITE *pXSprite = &xsprite[nXSprite];
     if (IsDudeSprite(pSprite) && !IsPlayerSprite(pSprite))
     {
-        if (pXSprite->at18_0 == 2 || (pXSprite->at18_0 != 1 && gGameOptions.nMonsterSettings == 2))
+        if (pXSprite->respawn == 2 || (pXSprite->respawn != 1 && gGameOptions.nMonsterSettings == 2))
             return gGameOptions.nMonsterRespawnTime;
         return -1;
     }
     if (IsWeaponSprite(pSprite))
     {
-        if (pXSprite->at18_0 == 3 || gGameOptions.nWeaponSettings == 1)
+        if (pXSprite->respawn == 3 || gGameOptions.nWeaponSettings == 1)
             return 0;
-        if (pXSprite->at18_0 != 1 && gGameOptions.nWeaponSettings != 0)
+        if (pXSprite->respawn != 1 && gGameOptions.nWeaponSettings != 0)
             return gGameOptions.nWeaponRespawnTime;
         return -1;
     }
     if (IsAmmoSprite(pSprite))
     {
-        if (pXSprite->at18_0 == 2 || (pXSprite->at18_0 != 1 && gGameOptions.nWeaponSettings != 0))
+        if (pXSprite->respawn == 2 || (pXSprite->respawn != 1 && gGameOptions.nWeaponSettings != 0))
             return gGameOptions.nWeaponRespawnTime;
         return -1;
     }
     if (IsItemSprite(pSprite))
     {
-        if (pXSprite->at18_0 == 3 && gGameOptions.nGameType == 1)
+        if (pXSprite->respawn == 3 && gGameOptions.nGameType == 1)
             return 0;
-        if (pXSprite->at18_0 == 2 || (pXSprite->at18_0 != 1 && gGameOptions.nItemSettings != 0))
+        if (pXSprite->respawn == 2 || (pXSprite->respawn != 1 && gGameOptions.nItemSettings != 0))
         {
             switch (pSprite->type)
             {
@@ -5780,16 +6278,16 @@ bool actCheckRespawn(spritetype *pSprite)
         int nRespawnTime = actGetRespawnTime(pSprite);
         if (nRespawnTime < 0)
             return 0;
-        pXSprite->atb_4 = 1;
+        pXSprite->respawnPending = 1;
         if (pSprite->type >= kThingBase && pSprite->type < kThingMax)
         {
-            pXSprite->atb_4 = 3;
+            pXSprite->respawnPending = 3;
             if (pSprite->type == 400)
                 pSprite->cstat |= 32768;
         }
         if (nRespawnTime > 0)
         {
-            if (pXSprite->atb_4 == 1)
+            if (pXSprite->respawnPending == 1)
                 nRespawnTime = mulscale16(nRespawnTime, 0xa000);
             pSprite->owner = pSprite->statnum;
             actPostSprite(pSprite->index, 8);
@@ -5832,7 +6330,7 @@ void actFireVector(spritetype *pShooter, int a2, int a3, int a4, int a5, int a6,
     int nShooter = pShooter->index;
     dassert(vectorType >= 0 && vectorType < kVectorMax);
     VECTORDATA *pVectorData = &gVectorData[vectorType];
-    int nRange = pVectorData->at9;
+    int nRange = pVectorData->maxDist;
     int hit = VectorScan(pShooter, a2, a3, a4, a5, a6, nRange, 1);
     if (hit == 3)
     {
@@ -5911,7 +6409,7 @@ void actFireVector(spritetype *pShooter, int a2, int a3, int a4, int a5, int a6,
             if (nXWall > 0)
             {
                 XWALL *pXWall = &xwall[nXWall];
-                if (pXWall->at10_6)
+                if (pXWall->triggerVector)
                     trTriggerWall(nWall, pXWall, 51);
             }
             break;
@@ -5933,7 +6431,7 @@ void actFireVector(spritetype *pShooter, int a2, int a3, int a4, int a5, int a6,
             if (nXSprite > 0)
             {
                 XSPRITE *pXSprite = &xsprite[nXSprite];
-                if (pXSprite->atd_7)
+                if (pXSprite->Vector)
                     trTriggerSprite(nSprite, pXSprite, 31);
             }
             if (pSprite->statnum == 4)
@@ -5949,14 +6447,14 @@ void actFireVector(spritetype *pShooter, int a2, int a3, int a4, int a5, int a6,
                 if (pVectorData->at11)
                 {
                     XSPRITE *pXSprite = &xsprite[nXSprite];
-                    if (!pXSprite->at2c_0)
+                    if (!pXSprite->burnTime)
                         evPost(nSprite, 3, 0, CALLBACK_ID_0);
                     actBurnSprite(actSpriteIdToOwnerId(nShooter), pXSprite, pVectorData->at11);
                 }
             }
             if (pSprite->statnum == 6)
             {
-                int t = dudeInfo[pSprite->type-kDudeBase].at4;
+                int t = pSprite->type == 426 ? 0 : dudeInfo[pSprite->type-kDudeBase].mass;
                 if (t > 0 && pVectorData->at5)
                 {
                     int t2 = divscale(pVectorData->at5, t, 8);
@@ -5967,13 +6465,13 @@ void actFireVector(spritetype *pShooter, int a2, int a3, int a4, int a5, int a6,
                 if (pVectorData->at11)
                 {
                     XSPRITE *pXSprite = &xsprite[nXSprite];
-                    if (!pXSprite->at2c_0)
+                    if (!pXSprite->burnTime)
                         evPost(nSprite, 3, 0, CALLBACK_ID_0);
                     actBurnSprite(actSpriteIdToOwnerId(nShooter), pXSprite, pVectorData->at11);
                 }
                 if (Chance(pVectorData->atd))
                 {
-                    int t = gVectorData[19].at9;
+                    int t = gVectorData[19].maxDist;
                     a4 += Random3(4000);
                     a5 += Random3(4000);
                     a6 += Random3(4000);
@@ -5993,9 +6491,9 @@ void actFireVector(spritetype *pShooter, int a2, int a3, int a4, int a5, int a6,
                                 FX_ID t2 = pVectorData->at1d[nSurf].at1;
                                 FX_ID t3 = pVectorData->at1d[nSurf].at2;
                                 spritetype *pFX = NULL;
-                                if (t2 > -1 && (t3 == -1 || Chance(0x4000)))
+                                if (t2 > FX_NONE && (t3 == FX_NONE || Chance(0x4000)))
                                     pFX = gFX.fxSpawn(t2, nSector, x, y, z, 0);
-                                else if(t3 > -1)
+                                else if(t3 > FX_NONE)
                                     pFX = gFX.fxSpawn(t3, nSector, x, y, z, 0);
                                 if (pFX)
                                 {
@@ -6090,12 +6588,12 @@ void TreeToGibCallback(int, int nXSprite)
     int nSprite = pXSprite->reference;
     spritetype *pSprite = &sprite[nSprite];
     pSprite->type = 417;
-    pXSprite->at1_6 = 1;
-    pXSprite->at10_0 = 15;
-    pXSprite->at12_0 = 0;
-    pXSprite->at14_0 = 0;
+    pXSprite->state = 1;
+    pXSprite->data1 = 15;
+    pXSprite->data2 = 0;
+    pXSprite->data3 = 0;
     pXSprite->health = thingInfo[17].at0;
-    pXSprite->at18_2 = 312;
+    pXSprite->data4 = 312;
     pSprite->cstat |= 257;
 }
 
@@ -6105,16 +6603,16 @@ void DudeToGibCallback1(int, int nXSprite)
     int nSprite = pXSprite->reference;
     spritetype *pSprite = &sprite[nSprite];
     pSprite->type = 426;
-    pXSprite->at10_0 = 8;
-    pXSprite->at12_0 = 0;
-    pXSprite->at14_0 = 0;
+    pXSprite->data1 = 8;
+    pXSprite->data2 = 0;
+    pXSprite->data3 = 0;
     pXSprite->health = thingInfo[26].at0;
-    pXSprite->at18_2 = 319;
-    pXSprite->atd_1 = 0;
-    pXSprite->atd_2 = 0;
-    pXSprite->at17_5 = 0;
-    pXSprite->at20_0 = gFrameClock;
-    pXSprite->at1_6 = 1;
+    pXSprite->data4 = 319;
+    pXSprite->triggerOnce = 0;
+    pXSprite->isTriggered = 0;
+    pXSprite->locked = 0;
+    pXSprite->targetX = gFrameClock;
+    pXSprite->state = 1;
 }
 
 void DudeToGibCallback2(int, int nXSprite)
@@ -6123,16 +6621,16 @@ void DudeToGibCallback2(int, int nXSprite)
     int nSprite = pXSprite->reference;
     spritetype *pSprite = &sprite[nSprite];
     pSprite->type = 426;
-    pXSprite->at10_0 = 3;
-    pXSprite->at12_0 = 0;
-    pXSprite->at14_0 = 0;
+    pXSprite->data1 = 3;
+    pXSprite->data2 = 0;
+    pXSprite->data3 = 0;
     pXSprite->health = thingInfo[26].at0;
-    pXSprite->at18_2 = 319;
-    pXSprite->atd_1 = 0;
-    pXSprite->atd_2 = 0;
-    pXSprite->at17_5 = 0;
-    pXSprite->at20_0 = gFrameClock;
-    pXSprite->at1_6 = 1;
+    pXSprite->data4 = 319;
+    pXSprite->triggerOnce = 0;
+    pXSprite->isTriggered = 0;
+    pXSprite->locked = 0;
+    pXSprite->targetX = gFrameClock;
+    pXSprite->state = 1;
 }
 
 void actPostSprite(int nSprite, int nStatus)
@@ -6238,4 +6736,207 @@ static ActorLoadSave *myLoadSave;
 void ActorLoadSaveConstruct(void)
 {
     myLoadSave = new ActorLoadSave();
+}
+
+
+// By NoOne: The following functions required for random event features
+//-------------------------
+
+int GetDataVal(spritetype* pSprite, int data) {
+    XSPRITE* pXSprite = &xsprite[pSprite->extra];
+    int rData[4];
+
+    rData[0] = pXSprite->data1; rData[2] = pXSprite->data3;
+    rData[1] = pXSprite->data2; rData[3] = pXSprite->data4;
+
+    return rData[data];
+}
+
+
+std::default_random_engine rng;
+int my_random(int a, int b)
+{
+
+    std::uniform_int_distribution<int> dist_a_b(a, b);
+    return dist_a_b(rng);
+}
+
+// tries to get random data field of sprite
+int GetRandDataVal(spritetype* pSprite) {
+
+    if (pSprite->extra < 0) return -1;
+    XSPRITE* pXSprite = &xsprite[pSprite->extra];
+    int rData[4]; int random = 0;
+    int maxRetries = 10; int selected = -1; int a = 1;
+
+
+    rData[0] = pXSprite->data1; rData[2] = pXSprite->data3;
+    rData[1] = pXSprite->data2; rData[3] = pXSprite->data4;
+
+    // randomize only in case if at least 2 data fields are not empty
+    for (int i = 0; i <= 3; i++) {
+        if (rData[i] == 0) {
+            if (a++ > 2)
+                return selected;
+        }
+    }
+
+    // try randomize few times
+    while (maxRetries > 0) {
+             
+        // use true random only for single player mode
+        if (gGameOptions.nGameType == 0 && !isOriginalDemo() && !isDemoRecords()) {
+            rng.seed(std::random_device()());
+            random = my_random(0, 4);
+        // otherwise use Blood's default one. In the future it maybe possible to make
+        // host send info to clients about what was generated.
+        } else {
+            random = Random(3);
+        }
+
+       if (rData[random] > 0) {
+            selected = (int)rData[random];
+            break;
+       }
+
+        maxRetries--;
+    }
+
+    // if nothing, get first found data value from top
+    if (selected == -1) {
+        int r = 0;
+        while (r <= 3) {
+            if (rData[r] > 0) {
+                selected = rData[r];
+                break;
+            }
+
+            r++;
+        }
+    }
+
+    return selected;
+}
+
+// this function drops random item using random pickup generator(s)
+spritetype* DropRandomPickupObject(spritetype* pSprite) {
+    int selected = GetRandDataVal(pSprite); spritetype* pSprite2 = NULL;
+    if (selected > 0) {
+        spritetype* pSource = pSprite; XSPRITE* pXSource = &xsprite[pSource->extra];
+        pSprite2 = actDropObject(pSprite, selected);
+
+        if ((pSource->hitag & kHitagExtBit) != 0) {
+            int nXSprite2 = pSprite2->extra;
+            if (nXSprite2 == -1)
+                nXSprite2 = dbInsertXSprite(pSprite2->index);
+            XSPRITE *pXSprite2 = &xsprite[nXSprite2];
+
+            // inherit spawn sprite trigger settings, so designer can send command when item picked up.
+            pXSprite2->txID = pXSource->txID;
+            pXSprite2->command = pXSource->command;
+            pXSprite2->triggerOn = pXSource->triggerOn;
+            pXSprite2->triggerOff = pXSource->triggerOff;
+
+            pXSprite2->Pickup = true;
+        }
+    }
+
+    return pSprite2;
+}
+
+// this function spawns random dude using dudeSpawn
+spritetype* spawnRandomDude(spritetype* pSprite) {
+    int selected = GetRandDataVal(pSprite); spritetype* pSprite2 = NULL;
+    if (selected <= 0) return pSprite2;
+    pSprite2 = actSpawnDude(pSprite, selected, -1, 0);
+
+    return pSprite2;
+}
+//-------------------------
+
+// By NoOne: this function plays sound predefined in missile info
+bool sfxPlayMissileSound(spritetype* pSprite, int missileId) {
+    MissileType* pMissType = &missileInfo[missileId - kMissileBase];
+    if (Chance(0x4000))
+        sfxPlay3DSound(pSprite, pMissType->fireSound[0], -1, 0);
+    else
+        sfxPlay3DSound(pSprite, pMissType->fireSound[1], -1, 0);
+
+    return true;
+}
+
+// By NoOne: this function plays sound predefined in vector info
+bool sfxPlayVectorSound(spritetype* pSprite, int vectorId) {
+    VECTORDATA* pVectorData = &gVectorData[vectorId];
+    if (Chance(0x4000))
+        sfxPlay3DSound(pSprite, pVectorData->fireSound[0], -1, 0);
+    else
+        sfxPlay3DSound(pSprite, pVectorData->fireSound[1], -1, 0);
+
+    return true;
+}
+
+// By NoOne: this function allows to spawn new custom dude and inherit spawner settings,
+// so custom dude can have different weapons, hp and so on...
+spritetype* actSpawnCustomDude(spritetype* pSprite, int nDist) {
+
+    spritetype* pSource = pSprite; XSPRITE* pXSource = &xsprite[pSource->extra];
+    spritetype* pDude = actSpawnSprite(pSprite,6); XSPRITE* pXDude = &xsprite[pDude->extra];
+
+    int x, y, z = pSprite->z, nAngle = pSprite->ang, nType = kGDXDudeUniversalCultist;
+
+    if (nDist > 0) {
+        x = pSprite->x + mulscale30r(Cos(nAngle), nDist);
+        y = pSprite->y + mulscale30r(Sin(nAngle), nDist);
+    }
+    else {
+        x = pSprite->x;
+        y = pSprite->y;
+    }
+
+    pDude->lotag = nType; pDude->ang = nAngle;
+    vec3_t pos = { x, y, z }; setsprite(pDude->index, &pos); 
+    pDude->cstat |= 0x1101; pDude->clipdist = dudeInfo[nType - kDudeBase].clipdist;
+
+    // inherit weapon and sound settings.
+    pXDude->data1 = pXSource->data1;
+    pXDude->data3 = pXSource->data3;
+
+    // inherit movement speed.
+    pXDude->busyTime = pXSource->busyTime;
+
+    // inherit custom hp settings
+    if (pXSource->data4 > 0) pXDude->health = pXSource->data4;
+    else pXDude->health = dudeInfo[nType - kDudeBase].startHealth << 4;
+
+    // inherit seq settings
+    int seqId = dudeInfo[nType - kDudeBase].seqStartID;
+    if (pXSource->data2 > 0) seqId = pXSource->data2;
+    pXDude->data2 = seqId;
+
+    if (gSysRes.Lookup(seqId,"SEQ"))
+        seqSpawn(seqId, 3, pDude->extra, -1);
+
+    if ((pSource->hitag & 0x0001) != 0) {
+        //inherit pal?
+        if (pDude->pal <= 0) pDude->pal = pSource->pal;
+
+        // inherit spawn sprite trigger settings, so designer can count monsters.
+        pXDude->txID = pXSource->txID;
+        pXDude->command = pXSource->command;
+        pXDude->triggerOn = pXSource->triggerOn;
+        pXDude->triggerOff = pXSource->triggerOff;
+
+        // inherit drop items
+        pXDude->dropMsg = pXSource->dropMsg;
+
+        // inherit dude flags
+        pXDude->dudeDeaf = pXSource->dudeDeaf;
+        pXDude->dudeGuard = pXSource->dudeGuard;
+        pXDude->dudeAmbush = pXSource->dudeAmbush;
+        pXDude->dudeFlag4 = pXSource->dudeFlag4;
+    }
+
+    aiInitSprite(pDude);
+    return pDude;
 }

@@ -51,23 +51,23 @@ static void sub_6D03C(spritetype *, XSPRITE *);
 
 static int nGillBiteClient = seqRegisterClient(GillBiteSeqCallback);
 
-AISTATE gillBeastIdle = { 0, -1, 0, NULL, NULL, aiThinkTarget, NULL };
-AISTATE gillBeastChase = { 9, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
-AISTATE gillBeastDodge = { 9, -1, 90, NULL, aiMoveDodge, NULL, &gillBeastChase };
-AISTATE gillBeastGoto = { 9, -1, 600, NULL, aiMoveForward, thinkGoto, &gillBeastIdle };
-AISTATE gillBeastBite = { 6, nGillBiteClient, 120, NULL, NULL, NULL, &gillBeastChase };
-AISTATE gillBeastSearch = { 9, -1, 120, NULL, aiMoveForward, thinkSearch, &gillBeastIdle };
-AISTATE gillBeastRecoil = { 5, -1, 0, NULL, NULL, NULL, &gillBeastDodge };
-AISTATE gillBeastSwimIdle = { 10, -1, 0, NULL, NULL, aiThinkTarget, NULL };
-AISTATE gillBeastSwimChase = { 10, -1, 0, NULL, sub_6CB00, thinkSwimChase, NULL };
-AISTATE gillBeastSwimDodge = { 10, -1, 90, NULL, aiMoveDodge, NULL, &gillBeastSwimChase };
-AISTATE gillBeastSwimGoto = { 10, -1, 600, NULL, aiMoveForward, thinkSwimGoto, &gillBeastSwimIdle };
-AISTATE gillBeastSwimSearch = { 10, -1, 120, NULL, aiMoveForward, thinkSearch, &gillBeastSwimIdle };
-AISTATE gillBeastSwimBite = { 7, nGillBiteClient, 0, NULL, NULL, thinkSwimChase, &gillBeastSwimChase };
-AISTATE gillBeastSwimRecoil = { 5, -1, 0, NULL, NULL, NULL, &gillBeastSwimDodge };
-AISTATE gillBeast13A138 = { 10, -1, 120, NULL, sub_6CD74, thinkSwimChase, &gillBeastSwimChase };
-AISTATE gillBeast13A154 = { 10, -1, 0, NULL, sub_6D03C, thinkSwimChase, &gillBeastSwimChase };
-AISTATE gillBeast13A170 = { 10, -1, 120, NULL, NULL, aiMoveTurn, &gillBeastSwimChase };
+AISTATE gillBeastIdle = { kAiStateIdle, 0, -1, 0, NULL, NULL, aiThinkTarget, NULL };
+AISTATE gillBeastChase = { kAiStateChase, 9, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
+AISTATE gillBeastDodge = { kAiStateMove, 9, -1, 90, NULL, aiMoveDodge, NULL, &gillBeastChase };
+AISTATE gillBeastGoto = { kAiStateMove, 9, -1, 600, NULL, aiMoveForward, thinkGoto, &gillBeastIdle };
+AISTATE gillBeastBite = { kAiStateChase, 6, nGillBiteClient, 120, NULL, NULL, NULL, &gillBeastChase };
+AISTATE gillBeastSearch = { kAiStateMove, 9, -1, 120, NULL, aiMoveForward, thinkSearch, &gillBeastIdle };
+AISTATE gillBeastRecoil = { kAiStateRecoil, 5, -1, 0, NULL, NULL, NULL, &gillBeastDodge };
+AISTATE gillBeastSwimIdle = { kAiStateIdle, 10, -1, 0, NULL, NULL, aiThinkTarget, NULL };
+AISTATE gillBeastSwimChase = { kAiStateChase, 10, -1, 0, NULL, sub_6CB00, thinkSwimChase, NULL };
+AISTATE gillBeastSwimDodge = { kAiStateMove, 10, -1, 90, NULL, aiMoveDodge, NULL, &gillBeastSwimChase };
+AISTATE gillBeastSwimGoto = { kAiStateMove, 10, -1, 600, NULL, aiMoveForward, thinkSwimGoto, &gillBeastSwimIdle };
+AISTATE gillBeastSwimSearch = { kAiStateSearch, 10, -1, 120, NULL, aiMoveForward, thinkSearch, &gillBeastSwimIdle };
+AISTATE gillBeastSwimBite = { kAiStateChase, 7, nGillBiteClient, 0, NULL, NULL, thinkSwimChase, &gillBeastSwimChase };
+AISTATE gillBeastSwimRecoil = { kAiStateRecoil, 5, -1, 0, NULL, NULL, NULL, &gillBeastSwimDodge };
+AISTATE gillBeast13A138 = { kAiStateOther, 10, -1, 120, NULL, sub_6CD74, thinkSwimChase, &gillBeastSwimChase };
+AISTATE gillBeast13A154 = { kAiStateOther, 10, -1, 0, NULL, sub_6D03C, thinkSwimChase, &gillBeastSwimChase };
+AISTATE gillBeast13A170 = { kAiStateOther, 10, -1, 120, NULL, NULL, aiMoveTurn, &gillBeastSwimChase };
 
 static void GillBiteSeqCallback(int, int nXSprite)
 {
@@ -87,7 +87,7 @@ static void GillBiteSeqCallback(int, int nXSprite)
 
 static void thinkSearch(spritetype *pSprite, XSPRITE *pXSprite)
 {
-    aiChooseDirection(pSprite, pXSprite, pXSprite->at16_0);
+    aiChooseDirection(pSprite, pXSprite, pXSprite->goalAng);
     aiThinkTarget(pSprite, pXSprite);
 }
 
@@ -101,14 +101,14 @@ static void thinkGoto(spritetype *pSprite, XSPRITE *pXSprite)
         pXSector = &xsector[nXSector];
     else
         pXSector = NULL;
-    int dx = pXSprite->at20_0-pSprite->x;
-    int dy = pXSprite->at24_0-pSprite->y;
+    int dx = pXSprite->targetX-pSprite->x;
+    int dy = pXSprite->targetY-pSprite->y;
     int nAngle = getangle(dx, dy);
     int nDist = approxDist(dx, dy);
     aiChooseDirection(pSprite, pXSprite, nAngle);
-    if (nDist < 512 && klabs(pSprite->ang - nAngle) < pDudeInfo->at1b)
+    if (nDist < 512 && klabs(pSprite->ang - nAngle) < pDudeInfo->periphery)
     {
-        if (pXSector && pXSector->at13_4)
+        if (pXSector && pXSector->Underwater)
             aiNewState(pSprite, pXSprite, &gillBeastSwimSearch);
         else
             aiNewState(pSprite, pXSprite, &gillBeastSearch);
@@ -126,7 +126,7 @@ static void thinkChase(spritetype *pSprite, XSPRITE *pXSprite)
             pXSector = &xsector[nXSector];
         else
             pXSector = NULL;
-        if (pXSector && pXSector->at13_4)
+        if (pXSector && pXSector->Underwater)
             aiNewState(pSprite, pXSprite, &gillBeastSwimSearch);
         else
             aiNewState(pSprite, pXSprite, &gillBeastSearch);
@@ -148,7 +148,7 @@ static void thinkChase(spritetype *pSprite, XSPRITE *pXSprite)
             pXSector = &xsector[nXSector];
         else
             pXSector = NULL;
-        if (pXSector && pXSector->at13_4)
+        if (pXSector && pXSector->Underwater)
             aiNewState(pSprite, pXSprite, &gillBeastSwimSearch);
         else
             aiNewState(pSprite, pXSprite, &gillBeastSearch);
@@ -162,20 +162,20 @@ static void thinkChase(spritetype *pSprite, XSPRITE *pXSprite)
             pXSector = &xsector[nXSector];
         else
             pXSector = NULL;
-        if (pXSector && pXSector->at13_4)
+        if (pXSector && pXSector->Underwater)
             aiNewState(pSprite, pXSprite, &gillBeastSwimSearch);
         else
             aiNewState(pSprite, pXSprite, &gillBeastSearch);
         return;
     }
     int nDist = approxDist(dx, dy);
-    if (nDist <= pDudeInfo->at17)
+    if (nDist <= pDudeInfo->seeDist)
     {
         int nDeltaAngle = ((getangle(dx,dy)+1024-pSprite->ang)&2047)-1024;
-        int height = (pDudeInfo->atb*pSprite->yrepeat)<<2;
+        int height = (pDudeInfo->eyeHeight*pSprite->yrepeat)<<2;
         if (cansee(pTarget->x, pTarget->y, pTarget->z, pTarget->sectnum, pSprite->x, pSprite->y, pSprite->z - height, pSprite->sectnum))
         {
-            if (nDist < pDudeInfo->at17 && klabs(nDeltaAngle) <= pDudeInfo->at1b)
+            if (nDist < pDudeInfo->seeDist && klabs(nDeltaAngle) <= pDudeInfo->periphery)
             {
                 aiSetTarget(pXSprite, pXSprite->target);
                 int nXSprite = sprite[pXSprite->reference].extra;
@@ -192,7 +192,7 @@ static void thinkChase(spritetype *pSprite, XSPRITE *pXSprite)
                     switch (hit)
                     {
                     case -1:
-                        if (pXSector && pXSector->at13_4)
+                        if (pXSector && pXSector->Underwater)
                             aiNewState(pSprite, pXSprite, &gillBeastSwimBite);
                         else
                             aiNewState(pSprite, pXSprite, &gillBeastBite);
@@ -200,21 +200,21 @@ static void thinkChase(spritetype *pSprite, XSPRITE *pXSprite)
                     case 3:
                         if (pSprite->type != sprite[gHitInfo.hitsprite].type)
                         {
-                            if (pXSector && pXSector->at13_4)
+                            if (pXSector && pXSector->Underwater)
                                 aiNewState(pSprite, pXSprite, &gillBeastSwimBite);
                             else
                                 aiNewState(pSprite, pXSprite, &gillBeastBite);
                         }
                         else
                         {
-                            if (pXSector && pXSector->at13_4)
+                            if (pXSector && pXSector->Underwater)
                                 aiNewState(pSprite, pXSprite, &gillBeastSwimDodge);
                             else
                                 aiNewState(pSprite, pXSprite, &gillBeastDodge);
                         }
                         break;
                     default:
-                        if (pXSector && pXSector->at13_4)
+                        if (pXSector && pXSector->Underwater)
                             aiNewState(pSprite, pXSprite, &gillBeastSwimBite);
                         else
                             aiNewState(pSprite, pXSprite, &gillBeastBite);
@@ -232,7 +232,7 @@ static void thinkChase(spritetype *pSprite, XSPRITE *pXSprite)
         pXSector = &xsector[nXSector];
     else
         pXSector = NULL;
-    if (pXSector && pXSector->at13_4)
+    if (pXSector && pXSector->Underwater)
         aiNewState(pSprite, pXSprite, &gillBeastSwimGoto);
     else
         aiNewState(pSprite, pXSprite, &gillBeastGoto);
@@ -244,12 +244,12 @@ static void thinkSwimGoto(spritetype *pSprite, XSPRITE *pXSprite)
 {
     dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax);
     DUDEINFO *pDudeInfo = &dudeInfo[pSprite->type - kDudeBase];
-    int dx = pXSprite->at20_0-pSprite->x;
-    int dy = pXSprite->at24_0-pSprite->y;
+    int dx = pXSprite->targetX-pSprite->x;
+    int dy = pXSprite->targetY-pSprite->y;
     int nAngle = getangle(dx, dy);
     int nDist = approxDist(dx, dy);
     aiChooseDirection(pSprite, pXSprite, nAngle);
-    if (nDist < 512 && klabs(pSprite->ang - nAngle) < pDudeInfo->at1b)
+    if (nDist < 512 && klabs(pSprite->ang - nAngle) < pDudeInfo->periphery)
         aiNewState(pSprite, pXSprite, &gillBeastSwimSearch);
     aiThinkTarget(pSprite, pXSprite);
 }
@@ -280,15 +280,15 @@ static void thinkSwimChase(spritetype *pSprite, XSPRITE *pXSprite)
         return;
     }
     int nDist = approxDist(dx, dy);
-    if (nDist <= pDudeInfo->at17)
+    if (nDist <= pDudeInfo->seeDist)
     {
         int nDeltaAngle = ((getangle(dx,dy)+1024-pSprite->ang)&2047)-1024;
-        int height = pDudeInfo->atb+pSprite->z;
+        int height = pDudeInfo->eyeHeight+pSprite->z;
         int top, bottom;
         GetSpriteExtents(pSprite, &top, &bottom);
         if (cansee(pTarget->x, pTarget->y, pTarget->z, pTarget->sectnum, pSprite->x, pSprite->y, pSprite->z - height, pSprite->sectnum))
         {
-            if (nDist < pDudeInfo->at17 && klabs(nDeltaAngle) <= pDudeInfo->at1b)
+            if (nDist < pDudeInfo->seeDist && klabs(nDeltaAngle) <= pDudeInfo->periphery)
             {
                 aiSetTarget(pXSprite, pXSprite->target);
                 int UNUSED(floorZ) = getflorzofslope(pSprite->sectnum, pSprite->x, pSprite->y);
@@ -314,16 +314,16 @@ static void sub_6CB00(spritetype *pSprite, XSPRITE *pXSprite)
     int nSprite = pSprite->index;
     dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax);
     DUDEINFO *pDudeInfo = &dudeInfo[pSprite->type - kDudeBase];
-    int nAng = ((pXSprite->at16_0+1024-pSprite->ang)&2047)-1024;
-    int nTurnRange = (pDudeInfo->at44<<2)>>4;
+    int nAng = ((pXSprite->goalAng+1024-pSprite->ang)&2047)-1024;
+    int nTurnRange = (pDudeInfo->angSpeed<<2)>>4;
     pSprite->ang = (pSprite->ang+ClipRange(nAng, -nTurnRange, nTurnRange))&2047;
-    int nAccel = (pDudeInfo->at38-(((4-gGameOptions.nDifficulty)<<27)/120)/120)<<2;
+    int nAccel = (pDudeInfo->frontSpeed-(((4-gGameOptions.nDifficulty)<<27)/120)/120)<<2;
     if (klabs(nAng) > 341)
         return;
     if (pXSprite->target == -1)
         pSprite->ang = (pSprite->ang+256)&2047;
-    int dx = pXSprite->at20_0-pSprite->x;
-    int dy = pXSprite->at24_0-pSprite->y;
+    int dx = pXSprite->targetX-pSprite->x;
+    int dy = pXSprite->targetY-pSprite->y;
     int UNUSED(nAngle) = getangle(dx, dy);
     int nDist = approxDist(dx, dy);
     if (Random(64) < 32 && nDist <= 0x400)
@@ -348,19 +348,19 @@ static void sub_6CD74(spritetype *pSprite, XSPRITE *pXSprite)
     dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax);
     DUDEINFO *pDudeInfo = &dudeInfo[pSprite->type - kDudeBase];
     spritetype *pTarget = &sprite[pXSprite->target];
-    int z = pSprite->z + dudeInfo[pSprite->type - kDudeBase].atb;
-    int z2 = pTarget->z + dudeInfo[pTarget->type - kDudeBase].atb;
-    int nAng = ((pXSprite->at16_0+1024-pSprite->ang)&2047)-1024;
-    int nTurnRange = (pDudeInfo->at44<<2)>>4;
+    int z = pSprite->z + dudeInfo[pSprite->type - kDudeBase].eyeHeight;
+    int z2 = pTarget->z + dudeInfo[pTarget->type - kDudeBase].eyeHeight;
+    int nAng = ((pXSprite->goalAng+1024-pSprite->ang)&2047)-1024;
+    int nTurnRange = (pDudeInfo->angSpeed<<2)>>4;
     pSprite->ang = (pSprite->ang+ClipRange(nAng, -nTurnRange, nTurnRange))&2047;
-    int nAccel = (pDudeInfo->at38-(((4-gGameOptions.nDifficulty)<<27)/120)/120)<<2;
+    int nAccel = (pDudeInfo->frontSpeed-(((4-gGameOptions.nDifficulty)<<27)/120)/120)<<2;
     if (klabs(nAng) > 341)
     {
-        pXSprite->at16_0 = (pSprite->ang+512)&2047;
+        pXSprite->goalAng = (pSprite->ang+512)&2047;
         return;
     }
-    int dx = pXSprite->at20_0-pSprite->x;
-    int dy = pXSprite->at24_0-pSprite->y;
+    int dx = pXSprite->targetX-pSprite->x;
+    int dy = pXSprite->targetY-pSprite->y;
     int dz = z2 - z;
     int UNUSED(nAngle) = getangle(dx, dy);
     int nDist = approxDist(dx, dy);
@@ -384,19 +384,19 @@ static void sub_6D03C(spritetype *pSprite, XSPRITE *pXSprite)
     dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax);
     DUDEINFO *pDudeInfo = &dudeInfo[pSprite->type - kDudeBase];
     spritetype *pTarget = &sprite[pXSprite->target];
-    int z = pSprite->z + dudeInfo[pSprite->type - kDudeBase].atb;
-    int z2 = pTarget->z + dudeInfo[pTarget->type - kDudeBase].atb;
-    int nAng = ((pXSprite->at16_0+1024-pSprite->ang)&2047)-1024;
-    int nTurnRange = (pDudeInfo->at44<<2)>>4;
+    int z = pSprite->z + dudeInfo[pSprite->type - kDudeBase].eyeHeight;
+    int z2 = pTarget->z + dudeInfo[pTarget->type - kDudeBase].eyeHeight;
+    int nAng = ((pXSprite->goalAng+1024-pSprite->ang)&2047)-1024;
+    int nTurnRange = (pDudeInfo->angSpeed<<2)>>4;
     pSprite->ang = (pSprite->ang+ClipRange(nAng, -nTurnRange, nTurnRange))&2047;
-    int nAccel = (pDudeInfo->at38-(((4-gGameOptions.nDifficulty)<<27)/120)/120)<<2;
+    int nAccel = (pDudeInfo->frontSpeed-(((4-gGameOptions.nDifficulty)<<27)/120)/120)<<2;
     if (klabs(nAng) > 341)
     {
         pSprite->ang = (pSprite->ang+512)&2047;
         return;
     }
-    int dx = pXSprite->at20_0-pSprite->x;
-    int dy = pXSprite->at24_0-pSprite->y;
+    int dx = pXSprite->targetX-pSprite->x;
+    int dy = pXSprite->targetY-pSprite->y;
     int dz = (z2 - z)<<3;
     int UNUSED(nAngle) = getangle(dx, dy);
     int nDist = approxDist(dx, dy);

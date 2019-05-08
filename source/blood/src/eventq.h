@@ -22,8 +22,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //-------------------------------------------------------------------------
 #pragma once
 #include "callback.h"
-
 #define kMaxChannels 4096
+
+struct RXBUCKET
+{
+    unsigned int at0_0 : 13;
+    unsigned int at1_5 : 3;
+};
+extern RXBUCKET rxBucket[];
+extern unsigned short bucketHead[];
 
 enum COMMAND_ID {
     COMMAND_ID_0 = 0,
@@ -39,7 +46,8 @@ enum COMMAND_ID {
 
     kCommandCallback = 20,
     COMMAND_ID_21,
-
+    kGDXCommandPaste = 53, // used by some new GDX types
+    kGDXCommandSpriteDamage, // used by sprite damager GDX type
     COMMAND_ID_64 = 64,
 };
 

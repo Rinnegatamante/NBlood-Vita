@@ -45,36 +45,42 @@ static void thinkChase(spritetype*, XSPRITE*);
 
 static int nBurnClient = seqRegisterClient(BurnSeqCallback);
 
-AISTATE cultistBurnIdle = { 3, -1, 0, NULL, NULL, aiThinkTarget, NULL };
-AISTATE cultistBurnChase = { 3, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
-AISTATE cultistBurnGoto = { 3, -1, 3600, NULL, aiMoveForward, thinkGoto, &cultistBurnSearch };
-AISTATE cultistBurnSearch = { 3, -1, 3600, NULL, aiMoveForward, thinkSearch, &cultistBurnSearch };
-AISTATE cultistBurnAttack = { 3, nBurnClient, 120, NULL, NULL, NULL, &cultistBurnChase };
+AISTATE cultistBurnIdle = { kAiStateIdle, 3, -1, 0, NULL, NULL, aiThinkTarget, NULL };
+AISTATE cultistBurnChase = { kAiStateChase, 3, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
+AISTATE cultistBurnGoto = { kAiStateMove, 3, -1, 3600, NULL, aiMoveForward, thinkGoto, &cultistBurnSearch };
+AISTATE cultistBurnSearch = { kAiStateSearch, 3, -1, 3600, NULL, aiMoveForward, thinkSearch, &cultistBurnSearch };
+AISTATE cultistBurnAttack = { kAiStateChase, 3, nBurnClient, 120, NULL, NULL, NULL, &cultistBurnChase };
 
-AISTATE zombieABurnChase = { 3, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
-AISTATE zombieABurnGoto = { 3, -1, 3600, NULL, aiMoveForward, thinkGoto, &zombieABurnSearch };
-AISTATE zombieABurnSearch = { 3, -1, 3600, NULL, aiMoveForward, thinkSearch, NULL };
-AISTATE zombieABurnAttack = { 3, nBurnClient, 120, NULL, NULL, NULL, &zombieABurnChase };
+AISTATE zombieABurnChase = { kAiStateChase, 3, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
+AISTATE zombieABurnGoto = { kAiStateMove, 3, -1, 3600, NULL, aiMoveForward, thinkGoto, &zombieABurnSearch };
+AISTATE zombieABurnSearch = { kAiStateSearch, 3, -1, 3600, NULL, aiMoveForward, thinkSearch, NULL };
+AISTATE zombieABurnAttack = { kAiStateChase, 3, nBurnClient, 120, NULL, NULL, NULL, &zombieABurnChase };
 
-AISTATE zombieFBurnChase = { 3, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
-AISTATE zombieFBurnGoto = { 3, -1, 3600, NULL, aiMoveForward, thinkGoto, &zombieFBurnSearch };
-AISTATE zombieFBurnSearch = { 3, -1, 3600, NULL, aiMoveForward, thinkSearch, NULL };
-AISTATE zombieFBurnAttack = { 3, nBurnClient, 120, NULL, NULL, NULL, &zombieFBurnChase };
+AISTATE zombieFBurnChase = { kAiStateChase, 3, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
+AISTATE zombieFBurnGoto = { kAiStateMove, 3, -1, 3600, NULL, aiMoveForward, thinkGoto, &zombieFBurnSearch };
+AISTATE zombieFBurnSearch = { kAiStateSearch, 3, -1, 3600, NULL, aiMoveForward, thinkSearch, NULL };
+AISTATE zombieFBurnAttack = { kAiStateChase, 3, nBurnClient, 120, NULL, NULL, NULL, &zombieFBurnChase };
 
-AISTATE innocentBurnChase = { 3, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
-AISTATE innocentBurnGoto = { 3, -1, 3600, NULL, aiMoveForward, thinkGoto, &zombieFBurnSearch };
-AISTATE innocentBurnSearch = { 3, -1, 3600, NULL, aiMoveForward, thinkSearch, NULL };
-AISTATE innocentBurnAttack = { 3, nBurnClient, 120, NULL, NULL, NULL, &zombieFBurnChase };
+AISTATE innocentBurnChase = { kAiStateChase, 3, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
+AISTATE innocentBurnGoto = { kAiStateMove, 3, -1, 3600, NULL, aiMoveForward, thinkGoto, &zombieFBurnSearch };
+AISTATE innocentBurnSearch = { kAiStateSearch, 3, -1, 3600, NULL, aiMoveForward, thinkSearch, NULL };
+AISTATE innocentBurnAttack = { kAiStateChase, 3, nBurnClient, 120, NULL, NULL, NULL, &zombieFBurnChase };
 
-AISTATE beastBurnChase = { 3, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
-AISTATE beastBurnGoto = { 3, -1, 3600, NULL, aiMoveForward, thinkGoto, &beastBurnSearch };
-AISTATE beastBurnSearch = { 3, -1, 3600, NULL, aiMoveForward, thinkSearch, &beastBurnSearch };
-AISTATE beastBurnAttack = { 3, nBurnClient, 120, NULL, NULL, NULL, &beastBurnChase };
+AISTATE beastBurnChase = { kAiStateChase, 3, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
+AISTATE beastBurnGoto = { kAiStateMove, 3, -1, 3600, NULL, aiMoveForward, thinkGoto, &beastBurnSearch };
+AISTATE beastBurnSearch = { kAiStateSearch, 3, -1, 3600, NULL, aiMoveForward, thinkSearch, &beastBurnSearch };
+AISTATE beastBurnAttack = { kAiStateChase, 3, nBurnClient, 120, NULL, NULL, NULL, &beastBurnChase };
 
-AISTATE tinycalebBurnChase = { 3, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
-AISTATE tinycalebBurnGoto = { 3, -1, 3600, NULL, aiMoveForward, thinkGoto, &tinycalebBurnSearch };
-AISTATE tinycalebBurnSearch = { 3, -1, 3600, NULL, aiMoveForward, thinkSearch, &tinycalebBurnSearch };
-AISTATE tinycalebBurnAttack = { 3, nBurnClient, 120, NULL, NULL, NULL, &tinycalebBurnChase };
+AISTATE tinycalebBurnChase = { kAiStateChase, 3, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
+AISTATE tinycalebBurnGoto = { kAiStateMove, 3, -1, 3600, NULL, aiMoveForward, thinkGoto, &tinycalebBurnSearch };
+AISTATE tinycalebBurnSearch = { kAiStateSearch, 3, -1, 3600, NULL, aiMoveForward, thinkSearch, &tinycalebBurnSearch };
+AISTATE tinycalebBurnAttack = { kAiStateChase, 3, nBurnClient, 120, NULL, NULL, NULL, &tinycalebBurnChase };
+
+AISTATE GDXGenDudeBurnIdle = { kAiStateIdle, 3, -1, 0, NULL, NULL, aiThinkTarget, NULL };
+AISTATE GDXGenDudeBurnChase = { kAiStateChase, 3, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
+AISTATE GDXGenDudeBurnGoto = { kAiStateMove, 3, -1, 3600, NULL, aiMoveForward, thinkGoto, &GDXGenDudeBurnSearch };
+AISTATE GDXGenDudeBurnSearch = { kAiStateSearch, 3, -1, 3600, NULL, aiMoveForward, thinkSearch, &GDXGenDudeBurnSearch };
+AISTATE GDXGenDudeBurnAttack = { kAiStateChase, 3, nBurnClient, 120, NULL, NULL, NULL, &GDXGenDudeBurnChase };
 
 static void BurnSeqCallback(int, int)
 {
@@ -82,7 +88,7 @@ static void BurnSeqCallback(int, int)
 
 static void thinkSearch(spritetype *pSprite, XSPRITE *pXSprite)
 {
-    aiChooseDirection(pSprite, pXSprite, pXSprite->at16_0);
+    aiChooseDirection(pSprite, pXSprite, pXSprite->goalAng);
     aiThinkTarget(pSprite, pXSprite);
 }
 
@@ -90,12 +96,12 @@ static void thinkGoto(spritetype *pSprite, XSPRITE *pXSprite)
 {
     dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax);
     DUDEINFO *pDudeInfo = &dudeInfo[pSprite->type - kDudeBase];
-    int dx = pXSprite->at20_0-pSprite->x;
-    int dy = pXSprite->at24_0-pSprite->y;
+    int dx = pXSprite->targetX-pSprite->x;
+    int dy = pXSprite->targetY-pSprite->y;
     int nAngle = getangle(dx, dy);
     int nDist = approxDist(dx, dy);
     aiChooseDirection(pSprite, pXSprite, nAngle);
-    if (nDist < 512 && klabs(pSprite->ang - nAngle) < pDudeInfo->at1b)
+    if (nDist < 512 && klabs(pSprite->ang - nAngle) < pDudeInfo->periphery)
     {
         switch (pSprite->type)
         {
@@ -116,6 +122,9 @@ static void thinkGoto(spritetype *pSprite, XSPRITE *pXSprite)
             break;
         case 252:
             aiNewState(pSprite, pXSprite, &tinycalebBurnSearch);
+            break;
+        case kGDXGenDudeBurning:
+            aiNewState(pSprite, pXSprite, &GDXGenDudeBurnSearch);
             break;
         }
     }
@@ -145,6 +154,9 @@ static void thinkChase(spritetype *pSprite, XSPRITE *pXSprite)
             break;
         case 252:
             aiNewState(pSprite, pXSprite, &tinycalebBurnGoto);
+            break;
+        case kGDXGenDudeBurning:
+            aiNewState(pSprite, pXSprite, &GDXGenDudeBurnGoto);
             break;
         }
         return;
@@ -179,17 +191,20 @@ static void thinkChase(spritetype *pSprite, XSPRITE *pXSprite)
         case 252:
             aiNewState(pSprite, pXSprite, &tinycalebBurnSearch);
             break;
+        case kGDXGenDudeBurning:
+            aiNewState(pSprite, pXSprite, &GDXGenDudeBurnSearch);
+            break;
         }
         return;
     }
     int nDist = approxDist(dx, dy);
-    if (nDist <= pDudeInfo->at17)
+    if (nDist <= pDudeInfo->seeDist)
     {
         int nDeltaAngle = ((getangle(dx,dy)+1024-pSprite->ang)&2047)-1024;
-        int height = (pDudeInfo->atb*pSprite->yrepeat)<<2;
+        int height = (pDudeInfo->eyeHeight*pSprite->yrepeat)<<2;
         if (cansee(pTarget->x, pTarget->y, pTarget->z, pTarget->sectnum, pSprite->x, pSprite->y, pSprite->z - height, pSprite->sectnum))
         {
-            if (nDist < pDudeInfo->at17 && klabs(nDeltaAngle) <= pDudeInfo->at1b)
+            if (nDist < pDudeInfo->seeDist && klabs(nDeltaAngle) <= pDudeInfo->periphery)
             {
                 aiSetTarget(pXSprite, pXSprite->target);
                 if (nDist < 0x333 && klabs(nDeltaAngle) < 85)
@@ -213,6 +228,9 @@ static void thinkChase(spritetype *pSprite, XSPRITE *pXSprite)
                         break;
                     case 252:
                         aiNewState(pSprite, pXSprite, &tinycalebBurnAttack);
+                        break;
+                    case kGDXGenDudeBurning:
+                        aiNewState(pSprite, pXSprite, &GDXGenDudeBurnSearch);
                         break;
                     }
                 }
@@ -240,6 +258,9 @@ static void thinkChase(spritetype *pSprite, XSPRITE *pXSprite)
         break;
     case 252:
         aiNewState(pSprite, pXSprite, &tinycalebBurnGoto);
+        break;
+    case kGDXGenDudeBurning:
+        aiNewState(pSprite, pXSprite, &GDXGenDudeBurnSearch);
         break;
     }
     pXSprite->target = -1;

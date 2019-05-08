@@ -119,6 +119,8 @@ int32_t gUpscaleFactor;
 int32_t gBrightness;
 int32_t gLevelStats;
 int32_t gFov;
+int32_t gCenterHoriz;
+int32_t gDeliriumBlur;
 
 int32_t CONFIG_FunctionNameToNum(const char *func)
 {
@@ -277,12 +279,12 @@ void CONFIG_SetDefaults(void)
     else
 # endif
     {
-        gSetup.xdim = 960;
-        gSetup.ydim = 544;
+        gSetup.xdim = 1024;
+        gSetup.ydim = 768;
     }
 #endif
 #ifdef __PSP2__
-	gSetup.xdim = 960;
+    gSetup.xdim = 960;
     gSetup.ydim = 544;
 #endif
 #ifdef USE_OPENGL
@@ -378,7 +380,9 @@ void CONFIG_SetDefaults(void)
     //ud.weaponscale            = 100;
     //ud.weaponsway             = 1;
     //ud.weaponswitch           = 3;  // new+empty
-	gFov = 90;
+    gFov = 90;
+    gCenterHoriz = 0;
+    gDeliriumBlur = 1;
     gViewSize = 2;
     gTurnSpeed = 92;
     gDetail = 4;
@@ -790,7 +794,7 @@ void CONFIG_WriteSettings(void) // save binds and aliases to <cfgname>_settings.
     char filename[BMAX_PATH];
 
 #ifdef __PSP2__
-	Bsprintf(filename, "ux0:data/NBlood/settings.cfg");
+    Bsprintf(filename, "ux0:data/NBlood/settings.cfg");
 #else
     if (!Bstrcmp(SetupFilename, SETUPFILENAME))
         Bsprintf(filename, "settings.cfg");

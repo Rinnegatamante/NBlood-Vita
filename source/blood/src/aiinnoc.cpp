@@ -43,16 +43,16 @@ static void thinkSearch(spritetype *, XSPRITE *);
 static void thinkGoto(spritetype *, XSPRITE *);
 static void thinkChase(spritetype *, XSPRITE *);
 
-AISTATE innocentIdle = { 0, -1, 0, NULL, NULL, aiThinkTarget, NULL };
-AISTATE innocentSearch = { 6, -1, 1800, NULL, aiMoveForward, thinkSearch, &innocentIdle };
-AISTATE innocentChase = { 6, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
-AISTATE innocentRecoil = { 5, -1, 0, NULL, NULL, NULL, &innocentChase };
-AISTATE innocentTeslaRecoil = { 4, -1, 0, NULL, NULL, NULL, &innocentChase };
-AISTATE innocentGoto = { 6, -1, 600, NULL, aiMoveForward, thinkGoto, &innocentIdle };
+AISTATE innocentIdle = { kAiStateIdle, 0, -1, 0, NULL, NULL, aiThinkTarget, NULL };
+AISTATE innocentSearch = { kAiStateSearch, 6, -1, 1800, NULL, aiMoveForward, thinkSearch, &innocentIdle };
+AISTATE innocentChase = { kAiStateChase, 6, -1, 0, NULL, aiMoveForward, thinkChase, NULL };
+AISTATE innocentRecoil = { kAiStateRecoil, 5, -1, 0, NULL, NULL, NULL, &innocentChase };
+AISTATE innocentTeslaRecoil = { kAiStateRecoil, 4, -1, 0, NULL, NULL, NULL, &innocentChase };
+AISTATE innocentGoto = { kAiStateMove, 6, -1, 600, NULL, aiMoveForward, thinkGoto, &innocentIdle };
 
 static void thinkSearch(spritetype *pSprite, XSPRITE *pXSprite)
 {
-    aiChooseDirection(pSprite, pXSprite, pXSprite->at16_0);
+    aiChooseDirection(pSprite, pXSprite, pXSprite->goalAng);
     aiThinkTarget(pSprite, pXSprite);
 }
 
@@ -60,12 +60,12 @@ static void thinkGoto(spritetype *pSprite, XSPRITE *pXSprite)
 {
     dassert(pSprite->type >= kDudeBase && pSprite->type < kDudeMax);
     DUDEINFO *pDudeInfo = &dudeInfo[pSprite->type - kDudeBase];
-    int dx = pXSprite->at20_0-pSprite->x;
-    int dy = pXSprite->at24_0-pSprite->y;
+    int dx = pXSprite->targetX-pSprite->x;
+    int dy = pXSprite->targetY-pSprite->y;
     int nAngle = getangle(dx, dy);
     int nDist = approxDist(dx, dy);
     aiChooseDirection(pSprite, pXSprite, nAngle);
-    if (nDist < 512 && klabs(pSprite->ang - nAngle) < pDudeInfo->at1b)
+    if (nDist < 512 && klabs(pSprite->ang - nAngle) < pDudeInfo->periphery)
         aiNewState(pSprite, pXSprite, &innocentSearch);
     aiThinkTarget(pSprite, pXSprite);
 }
@@ -96,13 +96,13 @@ static void thinkChase(spritetype *pSprite, XSPRITE *pXSprite)
         return;
     }
     int nDist = approxDist(dx, dy);
-    if (nDist <= pDudeInfo->at17)
+    if (nDist <= pDudeInfo->seeDist)
     {
         int nDeltaAngle = ((getangle(dx,dy)+1024-pSprite->ang)&2047)-1024;
-        int height = (pDudeInfo->atb*pSprite->yrepeat)<<2;
+        int height = (pDudeInfo->eyeHeight*pSprite->yrepeat)<<2;
         if (cansee(pTarget->x, pTarget->y, pTarget->z, pTarget->sectnum, pSprite->x, pSprite->y, pSprite->z - height, pSprite->sectnum))
         {
-            if (nDist < pDudeInfo->at17 && klabs(nDeltaAngle) <= pDudeInfo->at1b)
+            if (nDist < pDudeInfo->seeDist && klabs(nDeltaAngle) <= pDudeInfo->periphery)
             {
                 aiSetTarget(pXSprite, pXSprite->target);
                 if (nDist < 0x666 && klabs(nDeltaAngle) < 85)

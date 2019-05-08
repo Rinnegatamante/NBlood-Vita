@@ -256,7 +256,7 @@ void viewInitializePrediction(void)
 	predict.at5c = xvel[gMe->pSprite->index];
 	predict.at60 = yvel[gMe->pSprite->index];
 	predict.at64 = zvel[gMe->pSprite->index];
-	predict.at6a = gMe->pXSprite->at30_0;
+	predict.at6a = gMe->pXSprite->height;
 	predict.at48 = gMe->at2f;
 	predict.at4c = gMe->at316;
 	predict.at6e = gMe->atc.keyFlags.lookCenter;
@@ -397,6 +397,7 @@ void fakeProcessInput(PLAYER *pPlayer, GINPUT *pInput)
             predict.at48 = 2;
         break;
     }
+#if 0
     if (predict.at6e && !pInput->buttonFlags.lookUp && !pInput->buttonFlags.lookDown)
     {
         if (predict.at20 < 0)
@@ -421,6 +422,29 @@ void fakeProcessInput(PLAYER *pPlayer, GINPUT *pInput)
         predict.at24 = mulscale30(F16(180), Sin(fix16_to_int(predict.at20<<3)));
     else
         predict.at24 = 0;
+#endif
+    CONSTEXPR int upAngle = 289;
+    CONSTEXPR int downAngle = -347;
+    CONSTEXPR double lookStepUp = 4.0*upAngle/60.0;
+    CONSTEXPR double lookStepDown = -4.0*downAngle/60.0;
+    if (predict.at6e && !pInput->buttonFlags.lookUp && !pInput->buttonFlags.lookDown)
+    {
+        if (predict.at20 < 0)
+            predict.at20 = fix16_min(predict.at20+F16(lookStepDown), F16(0));
+        if (predict.at20 > 0)
+            predict.at20 = fix16_max(predict.at20-F16(lookStepUp), F16(0));
+        if (predict.at20 == 0)
+            predict.at6e = 0;
+    }
+    else
+    {
+        if (pInput->buttonFlags.lookUp)
+            predict.at20 = fix16_min(predict.at20+F16(lookStepUp), F16(upAngle));
+        if (pInput->buttonFlags.lookDown)
+            predict.at20 = fix16_max(predict.at20-F16(lookStepDown), F16(downAngle));
+    }
+    predict.at20 = fix16_clamp(predict.at20+(pInput->q16mlook<<3), F16(downAngle), F16(upAngle));
+    predict.at24 = fix16_from_float(100.f*tanf(fix16_to_float(predict.at20)*fPI/1024.f));
 
     int nSector = predict.at68;
     int florhit = predict.at75.florhit & 0xe000;
@@ -510,7 +534,7 @@ void fakePlayerProcess(PLAYER *pPlayer, GINPUT *pInput)
 	}
 	else
 	{
-		if (pXSprite->at30_0 < 256)
+		if (pXSprite->height < 256)
 		{
 			predict.at4 = (predict.at4+(pPosture->atc[predict.at70]*4))&2047;
 			predict.at14 = (predict.at14+(pPosture->atc[predict.at70]*4)/2)&2047;
@@ -620,9 +644,9 @@ void fakeMoveDude(spritetype *pSprite)
     if (nXSector > 0)
     {
         XSECTOR *pXSector = &xsector[nXSector];
-        if (pXSector->at13_4)
+        if (pXSector->Underwater)
             bUnderwater = 1;
-        if (pXSector->at13_5)
+        if (pXSector->Depth)
             bDepth = 1;
     }
     int nUpperLink = gUpperLink[nSector];
@@ -743,7 +767,7 @@ void fakeMoveDude(spritetype *pSprite)
             }
         }
         int nXSector = sector[pSprite->sectnum].extra;
-        if (nXSector > 0 && xsector[nXSector].at13_4)
+        if (nXSector > 0 && xsector[nXSector].Underwater)
             return;
         if (predict.at6a >= 0x100)
             return;
@@ -770,13 +794,13 @@ void fakeActAirDrag(spritetype *pSprite, int num)
     {
         dassert(nXSector < kMaxXSectors);
         XSECTOR *pXSector = &xsector[nXSector];
-        if (pXSector->at35_1 && (pXSector->at37_6 || pXSector->at1_7))
+        if (pXSector->windVel && (pXSector->windAlways || pXSector->busy))
         {
-            int vel = pXSector->at35_1<<12;
-            if (!pXSector->at37_6 && pXSector->at1_7)
-                vel = mulscale16(vel, pXSector->at1_7);
-            xvec = mulscale30(vel, Cos(pXSector->at36_3));
-            yvec = mulscale30(vel, Sin(pXSector->at36_3));
+            int vel = pXSector->windVel<<12;
+            if (!pXSector->windAlways && pXSector->busy)
+                vel = mulscale16(vel, pXSector->busy);
+            xvec = mulscale30(vel, Cos(pXSector->windAng));
+            yvec = mulscale30(vel, Sin(pXSector->windAng));
         }
     }
     predict.at5c += mulscale16(xvec-predict.at5c, num);
@@ -808,13 +832,13 @@ void fakeActProcessSprites(void)
 			bottom += predict.at58 - pSprite->z;
 			if (getflorzofslope(nSector, predict.at50, predict.at54) < bottom)
 			{
-				int angle = pXSector->at15_0;
+				int angle = pXSector->panAngle;
                 int speed = 0;
-				if (pXSector->at13_0 || pXSector->at1_6 || pXSector->at1_7)
+				if (pXSector->panAlways || pXSector->state || pXSector->busy)
 				{
-					speed = pXSector->at14_0 << 9;
-					if (!pXSector->at13_0 && pXSector->at1_7)
-						speed = mulscale16(speed, pXSector->at1_7);
+					speed = pXSector->panVel << 9;
+					if (!pXSector->panAlways && pXSector->busy)
+						speed = mulscale16(speed, pXSector->busy);
 				}
 				if (sector[nSector].floorstat&64)
 					angle = (GetWallAngle(sector[nSector].wallptr)+512)&2047;
@@ -822,7 +846,7 @@ void fakeActProcessSprites(void)
 				predict.at60 += mulscale30(speed,Sin(angle));
 			}
 		}
-        if (pXSector && pXSector->at13_4)
+        if (pXSector && pXSector->Underwater)
             fakeActAirDrag(pSprite, 5376);
         else
             fakeActAirDrag(pSprite, 128);
@@ -1479,6 +1503,12 @@ void viewInit(void)
     dassert(gSysRes.Size(hLens) == kLensSize * kLensSize * sizeof(int));
 
     lensTable = (int*)gSysRes.Lock(hLens);
+#if B_BIG_ENDIAN == 1
+    for (int i = 0; i < kLensSize*kLensSize; i++)
+    {
+        lensTable[i] = B_LITTLE32(lensTable[i]);
+    }
+#endif
     char *data = tileAllocTile(4077, kLensSize, kLensSize, 0, 0);
     memset(data, 255, kLensSize*kLensSize);
     gGameMessageMgr.SetState(gMessageState);
@@ -1607,6 +1637,12 @@ uspritetype *viewInsertTSprite(int nSector, int nStatnum, uspritetype *pSprite)
         pTSprite->owner = pSprite->owner;
         pTSprite->ang = pSprite->ang;
     }
+    if (videoGetRenderMode() >= REND_POLYMOST)
+    {
+        int nAngle = getangle(pTSprite->x-gView->pSprite->x, pTSprite->y-gView->pSprite->y);
+        pTSprite->x += Cos(nAngle)>>25;
+        pTSprite->y += Sin(nAngle)>>25;
+    }
     return &tsprite[nTSprite];
 }
 
@@ -1616,7 +1652,7 @@ int effectDetail[] = {
 
 uspritetype *viewAddEffect(int nTSprite, VIEW_EFFECT nViewEffect)
 {
-    dassert(nViewEffect < kViewEffectMax);
+    dassert(nViewEffect >= 0 && nViewEffect < kViewEffectMax);
     uspritetype *pTSprite = &tsprite[nTSprite];
     if (gDetail < effectDetail[nViewEffect] || nTSprite >= kMaxViewSprites) return NULL;
     switch (nViewEffect)
@@ -1814,12 +1850,6 @@ uspritetype *viewAddEffect(int nTSprite, VIEW_EFFECT nViewEffect)
         int height = tilesiz[pNSprite->picnum].y;
         int center = height/2+picanm[pNSprite->picnum].yofs;
         pNSprite->z -= (pNSprite->yrepeat<<2)*(height-center);
-        if (videoGetRenderMode() >= REND_POLYMOST)
-        {
-            int nAngle = getangle(pNSprite->x-gView->pSprite->x, pNSprite->y-gView->pSprite->y);
-            pNSprite->x += Cos(nAngle)>>25;
-            pNSprite->y += Sin(nAngle)>>25;
-        }
         break;
     }
     case VIEW_EFFECT_1:
@@ -1947,13 +1977,13 @@ void viewProcessSprites(int cX, int cY, int cZ)
                     {
                     case 20:
                     case 21:
-                        if (xsprite[nXSprite].at1_6)
+                        if (xsprite[nXSprite].state)
                         {
                             nAnim = 1;
                         }
                         break;
                     case 22:
-                        nAnim = xsprite[nXSprite].at10_0;
+                        nAnim = xsprite[nXSprite].data1;
                         break;
                     }
                 }
@@ -2077,7 +2107,7 @@ void viewProcessSprites(int cX, int cY, int cZ)
             pTSprite->xrepeat = 48;
             pTSprite->yrepeat = 48;
             pTSprite->shade = -128;
-            pTSprite->picnum = 2272 + 2*pTXSprite->atb_4;
+            pTSprite->picnum = 2272 + 2*pTXSprite->respawnPending;
             pTSprite->cstat &= ~514;
             if (((IsItemSprite((spritetype *)pTSprite) || IsAmmoSprite((spritetype *)pTSprite)) && gGameOptions.nItemSettings == 2)
                 || (IsWeaponSprite((spritetype *)pTSprite) && gGameOptions.nWeaponSettings == 3))
@@ -2090,7 +2120,7 @@ void viewProcessSprites(int cX, int cY, int cZ)
             }
         }
         if (spritesortcnt >= kMaxViewSprites) continue;
-        if (pTXSprite && pTXSprite->at2c_0 > 0)
+        if (pTXSprite && pTXSprite->burnTime > 0)
         {
             pTSprite->shade = ClipRange(pTSprite->shade-16-QRandom(8), -128, 127);
         }
@@ -2115,7 +2145,7 @@ void viewProcessSprites(int cX, int cY, int cZ)
             case 32:
                 if (pTXSprite)
                 {
-                    if (pTXSprite->at1_6 > 0)
+                    if (pTXSprite->state > 0)
                     {
                         pTSprite->shade = -128;
                         viewAddEffect(nTSprite, VIEW_EFFECT_11);
@@ -2134,7 +2164,7 @@ void viewProcessSprites(int cX, int cY, int cZ)
             case 30:
                 if (pTXSprite)
                 {
-                    if (pTXSprite->at1_6 > 0)
+                    if (pTXSprite->state > 0)
                     {
                         pTSprite->picnum++;
                         viewAddEffect(nTSprite, VIEW_EFFECT_4);
@@ -2151,7 +2181,7 @@ void viewProcessSprites(int cX, int cY, int cZ)
                 }
                 break;
             default:
-                if (pXSector && pXSector->at18_0)
+                if (pXSector && pXSector->color)
                 {
                     pTSprite->pal = pSector->floorpal;
                 }
@@ -2164,7 +2194,7 @@ void viewProcessSprites(int cX, int cY, int cZ)
             switch (pTSprite->type)
             {
             case 145:
-                if (pTXSprite && pTXSprite->at1_6 > 0 && gGameOptions.nGameType == 3)
+                if (pTXSprite && pTXSprite->state > 0 && gGameOptions.nGameType == 3)
                 {
                     uspritetype *pNTSprite = viewAddEffect(nTSprite, VIEW_EFFECT_17);
                     if (pNTSprite)
@@ -2172,7 +2202,7 @@ void viewProcessSprites(int cX, int cY, int cZ)
                 }
                 break;
             case 146:
-                if (pTXSprite && pTXSprite->at1_6 > 0 && gGameOptions.nGameType == 3)
+                if (pTXSprite && pTXSprite->state > 0 && gGameOptions.nGameType == 3)
                 {
                     uspritetype *pNTSprite = viewAddEffect(nTSprite, VIEW_EFFECT_17);
                     if (pNTSprite)
@@ -2190,7 +2220,7 @@ void viewProcessSprites(int cX, int cY, int cZ)
             default:
                 if (pTSprite->type >= 100 && pTSprite->type <= 106)
                     pTSprite->shade = -128;
-                if (pXSector && pXSector->at18_0)
+                if (pXSector && pXSector->color)
                 {
                     pTSprite->pal = pSector->floorpal;
                 }
@@ -2244,7 +2274,7 @@ void viewProcessSprites(int cX, int cY, int cZ)
         }
         case 6:
         {
-            if (pTSprite->type == 212 && pTXSprite->at34 == &hand13A3B4)
+            if (pTSprite->type == 212 && pTXSprite->aiState == &hand13A3B4)
             {
                 spritetype *pTTarget = &sprite[pTXSprite->target];
                 dassert(pTXSprite != NULL && pTTarget != NULL);
@@ -2254,7 +2284,7 @@ void viewProcessSprites(int cX, int cY, int cZ)
                     break;
                 }
             }
-            if (pXSector && pXSector->at18_0)
+            if (pXSector && pXSector->color)
             {
                 pTSprite->pal = pSector->floorpal;
             }
@@ -2333,12 +2363,12 @@ void viewProcessSprites(int cX, int cY, int cZ)
         {
             if (pTSprite->type == 454)
             {
-                if (pTXSprite->at1_6)
+                if (pTXSprite->state)
                 {
-                    if (pTXSprite->at10_0)
+                    if (pTXSprite->data1)
                     {
                         pTSprite->picnum = 772;
-                        if (pTXSprite->at12_0)
+                        if (pTXSprite->data2)
                         {
                             viewAddEffect(nTSprite, VIEW_EFFECT_9);
                         }
@@ -2346,7 +2376,7 @@ void viewProcessSprites(int cX, int cY, int cZ)
                 }
                 else
                 {
-                    if (pTXSprite->at10_0)
+                    if (pTXSprite->data1)
                     {
                         pTSprite->picnum = 773;
                     }
@@ -2360,7 +2390,7 @@ void viewProcessSprites(int cX, int cY, int cZ)
         }
         case 4:
         {
-            if (pXSector && pXSector->at18_0)
+            if (pXSector && pXSector->color)
             {
                 pTSprite->pal = pSector->floorpal;
             }
@@ -2597,16 +2627,14 @@ void UpdateDacs(int nPalette, bool bNoTint)
         oldPalette = nPalette;
     }
 
+#ifdef USE_OPENGL
     if (videoGetRenderMode() >= REND_POLYMOST)
     {
         gLastPal = 0;
-#ifdef USE_OPENGL
         polytint_t *tint = &hictinting[MAXPALOOKUPS-1];
-#endif
         int nRed = 0;
         int nGreen = 0;
         int nBlue = 0;
-#ifdef USE_OPENGL
         tint->f = 0;
         switch (nPalette)
         {
@@ -2617,28 +2645,19 @@ void UpdateDacs(int nPalette, bool bNoTint)
             tint->b = 255;
             break;
         case 1:
-            tint->r = 180;
-            tint->g = 190;
-            tint->b = 205;
-            //nRed += 0;
-            //nGreen += 3;
-            //nBlue += 9;
+            tint->r = 132;
+            tint->g = 164;
+            tint->b = 255;
             break;
         case 2:
             tint->r = 255;
-            tint->g = 218;
-            tint->b = 215;
-            //nRed += 1;
-            //nGreen += 0;
-            //nBlue += 0;
+            tint->g = 126;
+            tint->b = 105;
             break;
         case 3:
-            tint->r = 79;
-            tint->g = 78;
-            tint->b = 54;
-            //nRed += 25;
-            //nGreen += 26;
-            //nBlue += 0;
+            tint->r = 162;
+            tint->g = 186;
+            tint->b = 15;
             break;
         case 4:
             tint->r = 255;
@@ -2646,7 +2665,6 @@ void UpdateDacs(int nPalette, bool bNoTint)
             tint->b = 255;
             break;
         }
-#endif
         if (!bNoTint)
         {
             nRed += gView->at377;
@@ -2673,6 +2691,7 @@ void UpdateDacs(int nPalette, bool bNoTint)
         videoTintBlood(nRed, nGreen, nBlue);
     }
     else
+#endif
     {
         gLastPal = nPalette;
         if (bNoTint)
@@ -2835,10 +2854,17 @@ float r_ambientlight = 1.0, r_ambientlightrecip = 1.0;
 
 int gLastPal = 0;
 
+int32_t g_frameRate;
+
 void viewDrawScreen(void)
 {
     int nPalette = 0;
     static int lastUpdate;
+    int defaultHoriz = gCenterHoriz ? 100 : 90;
+
+#ifdef USE_OPENGL
+    polymostcenterhoriz = defaultHoriz;
+#endif
 
     timerUpdate();
     int delta = ClipLow(gGameClock - lastUpdate, 0);
@@ -2869,7 +2895,7 @@ void viewDrawScreen(void)
             newaspect_enable = 1;
             videoSetCorrectedAspect();
         }
-		renderSetAspect(Blrintf(float(viewingrange) * tanf(gFov * (PI/360.f))), yxaspect);
+        renderSetAspect(Blrintf(float(viewingrange) * tanf(gFov * (PI/360.f))), yxaspect);
         int cX = gView->pSprite->x;
         int cY = gView->pSprite->y;
         int cZ = gView->at67;
@@ -2951,21 +2977,34 @@ void viewDrawScreen(void)
         int v78 = interpolateang(gScreenTiltO, gScreenTilt, gInterpolate);
         char v14 = 0;
         char v10 = 0;
-        char vc = powerupCheck(gView, 28) > 0;
+        bool bDelirium = powerupCheck(gView, 28) > 0;
+        static bool bDeliriumOld = false;
+        int tiltcs, tiltdim;
         char v4 = powerupCheck(gView, 21) > 0;
 #ifdef USE_OPENGL
         renderSetRollAngle(0);
 #endif
-        if (v78 || vc)
+        if (v78 || bDelirium)
         {
             if (videoGetRenderMode() == REND_CLASSIC)
             {
                 int vr = viewingrange;
-                if (!waloff[4078])
+                walock[TILTBUFFER] = 255;
+                if (!waloff[TILTBUFFER])
                 {
-                    tileAllocTile(4078, 640, 640, 0, 0);
+                    tileAllocTile(TILTBUFFER, 640, 640, 0, 0);
                 }
-                renderSetTarget(4078, 640, 640);
+                if (xdim >= 640 && ydim >= 640)
+                {
+                    tiltcs = 1;
+                    tiltdim = 640;
+                }
+                else
+                {
+                    tiltcs = 0;
+                    tiltdim = 320;
+                }
+                renderSetTarget(TILTBUFFER, tiltdim, tiltdim);
                 int nAng = v78&511;
                 if (nAng > 256)
                 {
@@ -3023,7 +3062,7 @@ void viewDrawScreen(void)
                 vd4 += QRandom2(nValue >> 4);
                 vd0 += QRandom2(nValue);
             }
-            CalcOtherPosition((spritetype*)pOther->pSprite, &vd8, &vd4, &vd0, &vcc, v50, (fix16_t)0);
+            CalcOtherPosition(pOther->pSprite, &vd8, &vd4, &vd0, &vcc, v50, (fix16_t)0);
             CheckLink(&vd8, &vd4, &vd0, &vcc);
             if (IsUnderwaterSector(vcc))
             {
@@ -3033,7 +3072,7 @@ void viewDrawScreen(void)
             memcpy(gotpic+510, otherMirrorGotpic, 2);
             g_visibility = (int32_t)(ClipLow(gVisibility-32*pOther->at362, 0) * (numplayers > 1 ? 1.f : r_ambientlightrecip));
             int vc4, vc8;
-            getzsofslope(vcc, vd8, vd4, (int32_t*)&vc8, (int32_t*)&vc4);
+            getzsofslope(vcc, vd8, vd4, &vc8, &vc4);
             if (vd0 >= vc4)
             {
                 vd0 = vc4-(8<<4);
@@ -3047,8 +3086,8 @@ RORHACKOTHER:
             int ror_status[16];
             for (int i = 0; i < 16; i++)
                 ror_status[i] = TestBitString(gotpic, 4080 + i);
-            DrawMirrors(vd8, vd4, vd0, fix16_from_int(v50), fix16_from_int(v54 + 100));
-            drawrooms(vd8, vd4, vd0, v50, v54 + 100, vcc);
+            DrawMirrors(vd8, vd4, vd0, fix16_from_int(v50), fix16_from_int(v54 + defaultHoriz));
+            drawrooms(vd8, vd4, vd0, v50, v54 + defaultHoriz, vcc);
             bool do_ror_hack = false;
             for (int i = 0; i < 16; i++)
                 if (!ror_status[i] && TestBitString(gotpic, 4080 + i))
@@ -3066,7 +3105,7 @@ RORHACKOTHER:
             othercameraclock = gGameClock;
         }
 
-        if (!vc)
+        if (!bDelirium)
         {
             deliriumTilt = 0;
             deliriumTurn = 0;
@@ -3082,7 +3121,7 @@ RORHACKOTHER:
             XSPRITE *pXSprite = &xsprite[nXSprite];
             if (TestBitString(gotsector, pSprite->sectnum))
             {
-                unk += pXSprite->at14_0*32;
+                unk += pXSprite->data3*32;
             }
             nSprite = nextspritestat[nSprite];
         }
@@ -3107,7 +3146,7 @@ RORHACKOTHER:
         g_visibility = (int32_t)(ClipLow(gVisibility - 32 * gView->at362 - unk, 0) * (numplayers > 1 ? 1.f : r_ambientlightrecip));
         cA = (cA + interpolateangfix16(fix16_from_int(deliriumTurnO), fix16_from_int(deliriumTurn), gInterpolate)) & 0x7ffffff;
         int vfc, vf8;
-        getzsofslope(nSectnum, cX, cY, (int32_t*)&vfc, (int32_t*)&vf8);
+        getzsofslope(nSectnum, cX, cY, &vfc, &vf8);
         if (cZ >= vf8)
         {
             cZ = vf8-(8<<8);
@@ -3122,7 +3161,7 @@ RORHACK:
         for (int i = 0; i < 16; i++)
             ror_status[i] = TestBitString(gotpic, 4080+i);
         fix16_t deliriumPitchI = interpolate(fix16_from_int(deliriumPitchO), fix16_from_int(deliriumPitch), gInterpolate);
-        DrawMirrors(cX, cY, cZ, cA, q16horiz + F16(100) + deliriumPitchI);
+        DrawMirrors(cX, cY, cZ, cA, q16horiz + fix16_from_int(defaultHoriz) + deliriumPitchI);
         int bakCstat = gView->pSprite->cstat;
         if (gViewPos == 0)
         {
@@ -3132,7 +3171,7 @@ RORHACK:
         {
             gView->pSprite->cstat |= 514;
         }
-        renderDrawRoomsQ16(cX, cY, cZ, cA, q16horiz + F16(100) + deliriumPitchI, nSectnum);
+        renderDrawRoomsQ16(cX, cY, cZ, cA, q16horiz + fix16_from_int(defaultHoriz) + deliriumPitchI, nSectnum);
         bool do_ror_hack = false;
         for (int i = 0; i < 16; i++)
             if (!ror_status[i] && TestBitString(gotpic, 4080+i))
@@ -3151,14 +3190,14 @@ RORHACK:
         renderDrawMasks();
         gView->pSprite->cstat = bakCstat;
 
-        if (v78 || vc)
+        if (v78 || bDelirium)
         {
             if (videoGetRenderMode() == REND_CLASSIC)
             {
                 dassert(waloff[ TILTBUFFER ] != 0);
                 renderRestoreTarget();
                 int vrc = 64+4+2+1024;
-                if (vc)
+                if (bDelirium)
                 {
                     vrc = 64+32+4+2+1+1024;
                 }
@@ -3167,10 +3206,31 @@ RORHACK:
                 {
                     nAng = 512 - nAng;
                 }
-                int nScale = dmulscale32(Cos(nAng), 262144, Sin(nAng), 163840)>>1;
+                int nScale = dmulscale32(Cos(nAng), 262144, Sin(nAng), 163840)>>tiltcs;
                 rotatesprite(160<<16, 100<<16, nScale, v78+512, TILTBUFFER, 0, 0, vrc, gViewX0, gViewY0, gViewX1, gViewY1);
             }
+#ifdef USE_OPENGL
+            else
+            {
+                if (videoGetRenderMode() == REND_POLYMOST && gDeliriumBlur)
+                {
+                    if (!bDeliriumOld)
+                    {
+                        glAccum(GL_LOAD, 1.f);
+                    }
+                    else
+                    {
+                        const float fBlur = pow(1.f/3.f, 30.f/g_frameRate);
+                        glAccum(GL_MULT, fBlur);
+                        glAccum(GL_ACCUM, 1.f-fBlur);
+                        glAccum(GL_RETURN, 1.f);
+                    }
+                }
+            }
+#endif
         }
+
+        bDeliriumOld = bDelirium && gDeliriumBlur;
 
         if (r_usenewaspect)
             newaspect_enable = 0;
@@ -3187,7 +3247,7 @@ RORHACK:
         int v8 = byte_1CE5C2 > 0 && (sector[tmpSect].ceilingstat&1);
         if (gWeather.at12d8 > 0 || v8)
         {
-            gWeather.Draw(cX, cY, cZ, cA, q16horiz + 100 + deliriumPitch, gWeather.at12d8);
+            gWeather.Draw(cX, cY, cZ, cA, q16horiz + defaultHoriz + deliriumPitch, gWeather.at12d8);
             if (v8)
             {
                 gWeather.at12d8 = ClipRange(delta*8+gWeather.at12d8, 0, 4095);
@@ -3202,7 +3262,7 @@ RORHACK:
         {
             if (gAimReticle)
             {
-                rotatesprite(160<<16, 100<<16, 65536, 0, kCrosshairTile, 0, CROSSHAIR_PAL, 2, gViewX0, gViewY0, gViewX1, gViewY1);
+                rotatesprite(160<<16, defaultHoriz<<16, 65536, 0, kCrosshairTile, 0, CROSSHAIR_PAL, 2, gViewX0, gViewY0, gViewX1, gViewY1);
             }
             cX = (v4c>>8)+160;
             cY = (v48>>8)+220+(zDelta>>7);
@@ -3212,16 +3272,16 @@ RORHACK:
             {
                 sectortype *pSector = &sector[gView->pSprite->sectnum];
                 XSECTOR *pXSector = &xsector[pSector->extra];
-                if (pXSector->at18_0)
+                if (pXSector->color)
                 {
                     nPalette = pSector->floorpal;
                 }
             }
             WeaponDraw(gView, nShade, cX, cY, nPalette);
         }
-        if (gViewPos == 0 && gView->pXSprite->at2c_0 > 60)
+        if (gViewPos == 0 && gView->pXSprite->burnTime > 60)
         {
-            viewBurnTime(gView->pXSprite->at2c_0);
+            viewBurnTime(gView->pXSprite->burnTime);
         }
         if (packItemActive(gView, 1))
         {
@@ -3243,7 +3303,7 @@ RORHACK:
         if (v4 && gNetPlayers > 1)
         {
             DoLensEffect();
-			viewingRange = viewingrange;
+            viewingRange = viewingrange;
             yxAspect = yxaspect;
             renderSetAspect(65536, 54613);
             rotatesprite(280<<16, 35<<16, 53248, 512, 4077, v10, v14, 512+6, gViewX0, gViewY0, gViewX1, gViewY1);
@@ -3258,15 +3318,17 @@ RORHACK:
         {
             nPalette = 1;
         }
-        else
+        else if (gView->at87)
         {
-            if (gView->at87)
+            if (gView->nWaterPal)
+                nPalette = gView->nWaterPal;
+            else
             {
-                if (gView->pXSprite->at17_6 == 1)
+                if (gView->pXSprite->medium == 1)
                 {
                     nPalette = 1;
                 }
-                else if (gView->pXSprite->at17_6 == 2)
+                else if (gView->pXSprite->medium == 2)
                 {
                     nPalette = 3;
                 }
@@ -3361,9 +3423,9 @@ void viewLoadingScreenWide(void)
 #ifdef USE_OPENGL
     if ((blood_globalflags&BLOOD_FORCE_WIDELOADSCREEN) || (bLoadScreenCrcMatch && !(usehightile && h_xsize[kLoadScreen])))
 #else
-	if ((blood_globalflags&BLOOD_FORCE_WIDELOADSCREEN) || bLoadScreenCrcMatch)
+    if ((blood_globalflags&BLOOD_FORCE_WIDELOADSCREEN) || bLoadScreenCrcMatch)
 #endif
-	{
+    {
         if (yxaspect >= 65536)
         {
             rotatesprite(160<<16, 100<<16, 65536, 0, kLoadScreen, 0, 0, 1024+64+8+2, 0, 0, xdim-1, ydim-1);
@@ -3539,7 +3601,7 @@ void viewSetCrosshairColor(int32_t r, int32_t g, int32_t b)
 
 #define FPS_COLOR(x) ((x) ? COLOR_RED : COLOR_WHITE)
 
-int32_t gShowFps, gFramePeriod, g_frameRate;
+int32_t gShowFps, gFramePeriod;
 
 void viewPrintFPS(void)
 {

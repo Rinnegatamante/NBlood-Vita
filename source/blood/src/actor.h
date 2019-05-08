@@ -61,6 +61,7 @@ enum VECTOR_TYPE {
     VECTOR_TYPE_19,
     VECTOR_TYPE_20,
     VECTOR_TYPE_21,
+    VECTOR_TYPE_22,
     kVectorMax,
 };
 
@@ -79,13 +80,14 @@ struct THINGINFO
     unsigned char at15; // xrepeat
     unsigned char at16; // yrepeat
     int at17[7]; // damage
+    int allowThrow; // By NoOne: indicates if kGDXCustomDude can throw it
 };
 
 struct AMMOITEMDATA
 {
     short at0;
-    short picnum; // at2
-    char shade; // at4
+    short picnum; // startHealth
+    char shade; // mass
     char at5;
     unsigned char xrepeat; // at6
     unsigned char yrepeat; // at7
@@ -97,8 +99,8 @@ struct AMMOITEMDATA
 struct WEAPONITEMDATA
 {
     short at0;
-    short picnum; // at2
-    char shade; // at4
+    short picnum; // startHealth
+    char shade; // mass
     char at5;
     unsigned char xrepeat; // at6
     unsigned char yrepeat; // at7
@@ -110,8 +112,8 @@ struct WEAPONITEMDATA
 struct ITEMDATA
 {
     short at0; // unused?
-    short picnum; // at2
-    char shade; // at4
+    short picnum; // startHealth
+    char shade; // mass
     char at5; // unused?
     unsigned char xrepeat; // at6
     unsigned char yrepeat; // at7
@@ -127,6 +129,7 @@ struct MissileType
     unsigned char atb; // yrepeat
     char atc; // shade
     unsigned char atd; // clipdist
+    int fireSound[2]; // By NoOne: predefined fire sounds. used by kGDXCustomDude, but can be used for something else.
 };
 
 struct EXPLOSION
@@ -153,12 +156,13 @@ struct VECTORDATA {
     DAMAGE_TYPE at0;
     int at1; // damage
     int at5;
-    int at9; // range
+    int maxDist; // range
     int atd;
     int at11; // burn
     int at15; // blood splats
     int at19; // blood splat chance
     VECTORDATA_at1d at1d[15];
+    int fireSound[2]; // By NoOne: predefined fire sounds. used by kGDXCustomDude, but can be used for something else.
 };
 
 struct SPRITEHIT {
@@ -171,7 +175,7 @@ extern ITEMDATA gItemData[];
 extern MissileType missileInfo[];
 extern EXPLOSION explodeInfo[];
 extern THINGINFO thingInfo[];
-extern VECTORDATA gVectorData[22];
+extern VECTORDATA gVectorData[];
 
 extern SPRITEHIT gSpriteHit[];
 
@@ -208,8 +212,8 @@ inline bool IsDudeSprite(spritetype *pSprite)
 
 inline void actBurnSprite(int nSource, XSPRITE *pXSprite, int nTime)
 {
-    pXSprite->at2c_0 = ClipHigh(pXSprite->at2c_0 + nTime, sprite[pXSprite->reference].statnum == 6 ? 2400 : 1200);
-    pXSprite->at2e_0 = nSource;
+    pXSprite->burnTime = ClipHigh(pXSprite->burnTime + nTime, sprite[pXSprite->reference].statnum == 6 ? 2400 : 1200);
+    pXSprite->burnSource = nSource;
 }
 
 bool IsItemSprite(spritetype *pSprite);
@@ -252,7 +256,7 @@ void actActivateGibObject(spritetype *pSprite, XSPRITE *pXSprite);
 bool IsUnderWater(spritetype *pSprite);
 void actProcessSprites(void);
 spritetype * actSpawnSprite(int nSector, int x, int y, int z, int nStat, char a6);
-spritetype *sub_36878(spritetype *pSource, short nType, int a3, int a4);
+spritetype *actSpawnDude(spritetype *pSource, short nType, int a3, int a4);
 spritetype * actSpawnSprite(spritetype *pSource, int nStat);
 spritetype * actSpawnThing(int nSector, int x, int y, int z, int nThingType);
 spritetype * actFireThing(spritetype *pSprite, int a2, int a3, int a4, int thingType, int a6);
@@ -264,3 +268,11 @@ void actFireVector(spritetype *pShooter, int a2, int a3, int a4, int a5, int a6,
 void actPostSprite(int nSprite, int nStatus);
 void actPostProcess(void);
 void MakeSplash(spritetype *pSprite, XSPRITE *pXSprite);
+spritetype* DropRandomPickupObject(spritetype* pSprite);
+spritetype* spawnRandomDude(spritetype* pSprite);
+int GetDataVal(spritetype* pSprite, int data);
+int my_random(int a, int b);
+int GetRandDataVal(spritetype* pSprite);
+bool sfxPlayMissileSound(spritetype* pSprite, int missileId);
+bool sfxPlayVectorSound(spritetype* pSprite, int vectorId);
+spritetype* actSpawnCustomDude(spritetype* pSprite, int nDist);
