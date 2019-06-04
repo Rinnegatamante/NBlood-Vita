@@ -442,16 +442,15 @@ typedef struct credits_voice{
     char text[256];
 } credits_voice;
 
-#define INTRO_VOICES 8
+#define INTRO_VOICES 7
 
 credits_voice intro[INTRO_VOICES] = {
     {0, 100, &yellow, "NBlood Vita v.1.0"},
     {0, 120, &white,  "by Rinnegatamante"},
     {0, 200, &yellow, "Thanks to my distinguished Patroners:"},
-    {0, 220, &white,  "XandridFire"},
-    {0, 240, &white,  "RaveHeart"},
-	{0, 260, &white,  "nobodywasishere"},
-	{0, 280, &white,  "Tain Sueiras"},
+    {0, 220, &white,  "RaveHeart"},
+	{0, 240, &white,  "nobodywasishere"},
+	{0, 260, &white,  "Tain Sueiras"},
     {0, 500, &green,  "Loading, please wait..."}
 };
 
