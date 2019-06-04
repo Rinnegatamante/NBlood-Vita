@@ -127,7 +127,7 @@ int tileInit(char a1, const char *a2)
 
 char * tileLoadTile(int nTile)
 {
-    tileLoad(nTile);
+    if (!waloff[nTile]) tileLoad(nTile);
     return (char*)waloff[nTile];
 }
 
