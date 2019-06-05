@@ -2740,7 +2740,7 @@ int32_t kzfindfile(char *filnam)
 #elif defined(__PSP2__)
             if (hfind < 0)
             {
-                char const *s = "ux0:data/EDuke32";
+                char const *s = "ux0:data/NBlood";
                 if (wildstpathleng > 0)
                 {
                     filnam[wildstpathleng] = 0;
